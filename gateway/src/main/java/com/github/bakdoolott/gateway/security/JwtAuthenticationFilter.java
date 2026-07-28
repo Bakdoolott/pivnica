@@ -26,12 +26,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        String path = request.getURI().getPath();
 
         ServerHttpRequest.Builder requestBuilder = request.mutate()
                 .headers(headers -> {
                     headers.remove("X-User-Id");
                     headers.remove("X-User-Roles");
                 });
+
+        if (isPublicPath(path)) {
+            return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
+        }
 
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
@@ -69,6 +74,16 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(status);
         return response.setComplete();
+    }
+
+    private boolean isPublicPath(String path) {
+        return path.startsWith("/api/v1/auth/")
+                || path.equals("/swagger-ui.html")
+                || path.equals("/swagger-ui/index.html")
+                || path.startsWith("/swagger-ui/")
+                || path.startsWith("/webjars/swagger-ui/")
+                || path.startsWith("/v3/api-docs/")
+                || path.startsWith("/docs/");
     }
 
     @Override
