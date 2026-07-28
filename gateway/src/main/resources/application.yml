@@ -1,6 +1,79 @@
 spring:
   application:
     name: gateway
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration
+
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service-route
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=0
+
+        - id: core-service-route
+          uri: http://core-service:8082
+          predicates:
+            - Path=/api/v1/core/**, /api/v2/core/**, /api/v3/core/**
+          filters:
+            - StripPrefix=0
+
+        - id: payment-service-route
+          uri: http://payment-service:8083
+          predicates:
+            - Path=/api/v1/payment/**
+          filters:
+            - StripPrefix=0
+        - id: admin-service-route
+          uri: http://admin-service:8084
+          predicates:
+            - Path=/api/v1/admin/**
+
+        - id: auth-service-docs
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/docs/auth/**
+          filters:
+            - 'RewritePath=/docs/auth/(?<segment>.*), /$\{segment}'
+
+        - id: core-service-docs
+          uri: http://core-service:8082
+          predicates:
+            - Path=/docs/core/**
+          filters:
+            - 'RewritePath=/docs/core/(?<segment>.*), /$\{segment}'
+
+        - id: payment-service-docs
+          uri: http://payment-service:8083
+          predicates:
+            - Path=/docs/payment/**
+          filters:
+            - 'RewritePath=/docs/payment/(?<segment>.*), /$\{segment}'
+
+        - id: admin-service-docs
+          uri: http://admin-service:8084
+          predicates:
+            - Path=/docs/admin/**
+          filters:
+            - 'RewritePath=/docs/admin/(?<segment>.*), /$\{segment}'
+
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Auth Service
+        url: /docs/auth/v3/api-docs
+      - name: Core Service
+        url: /docs/core/v3/api-docs
+      - name: Payment Service
+        url: /docs/payment/v3/api-docs
+      - name: Admin Service
+        url: /docs/admin/v3/api-docs
+    urls-primary-name: Core Service
+
 
 jwt:
   secret: aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
