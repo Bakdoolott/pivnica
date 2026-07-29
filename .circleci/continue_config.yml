@@ -1,0 +1,58 @@
+version: 2.1
+
+# Принимаем pipeline-параметры из setup-конфига
+parameters:
+  build-gateway:
+    type: boolean
+    default: false
+
+#  build-auth:
+#    type: boolean
+#    default: false
+
+jobs:
+  build-and-push-gateway-job:
+    docker:
+      - image: cimg/base:2024.11
+    steps:
+      - checkout
+      - setup-remote-docker:
+          version: 24.0.9
+      - run:
+          name: Build Docker image
+          command: |
+            cd gateway
+            docker build -t mirlanuulubakdoolot293/gateway:latest
+            docker tag mirlanuulubakdoolot293/gateway:latest mirlanuulubakdoolot293/gateway:${CIRCLE_SHA1}
+      - run:
+          name: Push to DockerHub
+          command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push mirlanuulubakdoolot293/gateway:latest
+            docker push mirlanuulubakdoolot293/gateway:${CIRCLE_SHA1}
+
+#  build-auth-job:
+#    docker:
+#      - image: cimg/openjdk:21.0
+#    steps:
+#      - checkout
+#      - run:
+#          name: Build Auth
+#          command: |
+#            cd auth-service
+#            ./mvnw clean package
+
+workflows:
+  # Этот workflow запускается только если условие выполнено
+  gateway-workflow:
+    when: << pipeline.parameters.build-gateway >>
+    jobs:
+      - build-and-push-gateway-job:
+          filters:
+            branches:
+              only: dev
+
+#  auth-workflow:
+#    when: << pipeline.parameters.build-auth >>
+#    jobs:
+#      - build-auth-job
