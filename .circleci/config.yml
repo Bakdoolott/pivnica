@@ -1,0 +1,23 @@
+version: 2.1
+
+# Включаем динамическую конфигурацию
+setup: true
+
+orbs:
+  # Подключаем официальный орб для фильтрации по путям
+  path-filtering: circleci/path-filtering@0.1.7
+
+workflows:
+  # Этот workflow запускается при каждом пуше
+  generate-config:
+    jobs:
+      - path-filtering/filter:
+          name: check-project-changes
+          # Сравниваем с основной веткой, чтобы определить изменения
+          base-revision: dev
+          # Путь к конфигу, который будет выполнен, если условие совпадет
+          config-path: .circleci/continue_config.yml
+          # Правила фильтрации
+          mapping: |
+            gateway/.* build-gateway true
+#            auth-service/.* build-auth true
