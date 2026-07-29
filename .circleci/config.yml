@@ -10,11 +10,13 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 24.0.9
       - run:
-          name: Test build
+          name: Test Docker
           command: |
-            echo "Hello from CircleCI"
-            ls -la
+            docker --version
+            echo "Docker is available"
 
 workflows:
   workflow:
