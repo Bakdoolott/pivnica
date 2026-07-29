@@ -1,51 +1,18 @@
 version: 2.1
 
-executors:
-  docker-executor:
+jobs:
+  build:
     docker:
       - image: cimg/base:2024.11
-
-jobs:
-  build-and-push:
-    executor: docker-executor
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 24.0.9
       - run:
-          name: Detect changes and build services
+          name: Test build
           command: |
-            BASE_BRANCH="dev"
-            git fetch origin $BASE_BRANCH
-            CHANGED_FILES=$(git diff --name-only origin/$BASE_BRANCH...HEAD)
-            echo "Changed files: $CHANGED_FILES"
-
-            build_service() {
-              local service_dir=$1
-              local dockerhub_repo=$2
-              if echo "$CHANGED_FILES" | grep -q "^$service_dir/"; then
-                echo "🔨 Building $service_dir..."
-                cd $service_dir
-                docker build -t $dockerhub_repo:latest .
-                docker tag $dockerhub_repo:latest $dockerhub_repo:${CIRCLE_SHA1}
-                echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-                docker push $dockerhub_repo:latest
-                docker push $dockerhub_repo:${CIRCLE_SHA1}
-                cd ..
-              else
-                echo "⏭️  No changes in $service_dir — skipping."
-              fi
-            }
-
-            build_service "gateway" "mirlanuulubakdoolot293/gateway"
-            # build_service "auth-service" "mirlanuulubakdoolot293/auth"
-            # build_service "core-service" "mirlanuulubakdoolot293/core"
-            # build_service "payment-service" "mirlanuulubakdoolot293/payment"
+            echo "Hello from CircleCI"
+            ls -la
 
 workflows:
-  build:
+  workflow:
     jobs:
-      - build-and-push:
-          filters:
-            branches:
-              only: dev
+      - build
