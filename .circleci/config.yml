@@ -1,9 +1,13 @@
 version: 2.1
 
-jobs:
-  build:
+executors:
+  docker-executor:
     docker:
       - image: cimg/base:2024.11
+
+jobs:
+  build:
+    executor: docker-executor
     steps:
       - checkout
       - run:
