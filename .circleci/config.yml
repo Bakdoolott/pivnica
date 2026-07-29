@@ -10,10 +10,10 @@ jobs:
           name: Detect changes and build services
           command: |
             BASE_BRANCH="dev"
-            git fetch origin $BASE_BRANCH
-            CHANGED_FILES=$(git diff --name-only origin/$BASE_BRANCH...HEAD)
+            # git fetch origin $BASE_BRANCH  # Эту строку можно вообще удалить, она не нужна
+            CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD)
             echo "Changed files: $CHANGED_FILES"
-
+            
             build_service() {
               local service_dir=$1
               local dockerhub_repo=$2
@@ -30,7 +30,7 @@ jobs:
                 echo "⏭️  No changes in $service_dir — skipping."
               fi
             }
-
+            
             build_service "gateway" "mirlanuulubakdoolot293/gateway"
             # build_service "auth-service" "mirlanuulubakdoolot293/auth"
             # build_service "core-service" "mirlanuulubakdoolot293/core"
