@@ -24,5 +24,26 @@ services:
       timeout: 5s
       retries: 5
 
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JWT_SECRET=aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - CORE_SERVICE_URL=http://core-service:8082
+      - PAYMENT_SERVICE_URL=http://payment-service:8083
+    depends_on:
+      - postgres
+    networks:
+      - backend
+
+
+
 volumes:
   postgres_data:
