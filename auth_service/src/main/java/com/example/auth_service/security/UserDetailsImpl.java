@@ -1,6 +1,6 @@
 package com.example.auth_service.security;
 
-import com.example.auth_service.entity.model.RoleEntity;
+import com.example.auth_service.entity.enums.RoleEnums;
 import com.example.auth_service.entity.model.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,23 +9,25 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
     private Long id;
-    private String name;
-    private String phone;
-    private List<RoleEntity> roles;
+    private String firstName;
+    private String phoneNumber;
+    private Set<RoleEnums> roles;
+    private boolean enabled;
 
     public static UserDetailsImpl build(UserEntity user) {
         return new UserDetailsImpl(
                 user.getId(),
-                user.getName(),
-                user.getPhone(),
-                user.getRoles()
+                user.getFirstName(),
+                user.getPhoneNumber(),
+                user.getRoles(),
+                user.isEnable()
         );
     }
 
@@ -41,7 +43,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getUsername() {
-        return phone;
+        return phoneNumber;
     }
 
     @Override
@@ -61,6 +63,6 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }

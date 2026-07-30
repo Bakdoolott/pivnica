@@ -1,7 +1,7 @@
 package com.example.auth_service.service.impl;
 
+import com.example.auth_service.entity.enums.RoleEnums;
 import com.example.auth_service.entity.model.UserEntity;
-import com.example.auth_service.repository.RoleRepository;
 import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.security.UserDetailsImpl;
 import com.example.auth_service.service.UserService;
@@ -11,40 +11,42 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
 
     @Override
     @Transactional
     public UserEntity save(UserEntity entity) {
-        return userRepository.findByPhone(entity.getPhone())
+        return userRepository.findByPhoneNumber(entity.getPhoneNumber())
                 .map(existing -> {
-                    existing.setName(entity.getName());
+                    existing.setFirstName(entity.getFirstName());
+                    existing.setTgUserName(entity.getTgUserName());
                     existing.setChatId(entity.getChatId());
                     return userRepository.save(existing);
                 })
                 .orElseGet(() -> {
-                    entity.setRoles(List.of(roleRepository.findByRoleName("USER")
-                            .orElseThrow(() -> new RuntimeException("Роль USER не найдена в БД"))));
+                    entity.setRoles(Set.of(RoleEnums.USER));
                     return userRepository.save(entity);
                 });
     }
 
     @Override
-    public UserEntity findByPhone(String phone) {
-        return userRepository.findByPhone(phone)
+    public UserEntity findByPhoneNumber(String phoneNumber) {
+        UserEntity user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+        if (!user.isEnable()) {
+            throw new UsernameNotFoundException("Пользователь не найден");
+        }
+        return user;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user = userRepository.findByPhone(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-        return UserDetailsImpl.build(user);
+        return UserDetailsImpl.build(findByPhoneNumber(username));
     }
 }
+

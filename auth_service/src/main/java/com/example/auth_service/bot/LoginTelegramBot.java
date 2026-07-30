@@ -75,8 +75,9 @@ public class LoginTelegramBot extends TelegramLongPollingBot {
             check.setCheck(RegistrationEnum.COMPLETED);
 
             userService.save(UserEntity.builder()
-                    .name(check.getName())
-                    .phone(check.getPhone())
+                    .firstName(check.getName())
+                    .phoneNumber(check.getPhone())
+                    .tgUserName(update.getMessage().getFrom().getUserName())
                     .chatId(chatId).build());
 
             sendTextMessage(chatId, "Регистрация завершена. Теперь вернитесь на сайт и введите свой номер телефона для входа.");

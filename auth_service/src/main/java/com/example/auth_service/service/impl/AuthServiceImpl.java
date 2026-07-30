@@ -1,97 +1,136 @@
 package com.example.auth_service.service.impl;
 
 import com.example.auth_service.bot.LoginTelegramBot;
+import com.example.auth_service.entity.model.TemporaryCodeEntity;
 import com.example.auth_service.entity.model.UserEntity;
+import com.example.auth_service.repository.TemporaryCodeRepository;
 import com.example.auth_service.security.JwtCore;
 import com.example.auth_service.security.UserDetailsImpl;
 import com.example.auth_service.service.AuthService;
 import com.example.auth_service.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private StringRedisTemplate redisTemplate;
-    private LoginTelegramBot loginTelegramBot;
-    private UserService userService;
-    private JwtCore jwtCore;
+    private final Duration CODE_TTL;
+    private final Duration RESEND_INTERVAL;
+    private final int MAX_ATTEMPTS;
 
-    private final Duration codeTTL;
+    private final TemporaryCodeRepository temporaryCodeRepository;
+    private final LoginTelegramBot loginTelegramBot;
+    private final UserService userService;
+    private final JwtCore jwtCore;
     private final SecureRandom random;
 
     @Autowired
-    public AuthServiceImpl(StringRedisTemplate redisTemplate,
+    public AuthServiceImpl(TemporaryCodeRepository temporaryCodeRepository,
                            LoginTelegramBot loginTelegramBot,
                            UserService userService,
                            JwtCore jwtCore) {
-        this.redisTemplate = redisTemplate;
+        this.temporaryCodeRepository = temporaryCodeRepository;
         this.loginTelegramBot = loginTelegramBot;
         this.userService = userService;
         this.jwtCore = jwtCore;
-        this.codeTTL = Duration.ofMinutes(2);
         this.random = new SecureRandom();
+        CODE_TTL = Duration.ofMinutes(2);
+        RESEND_INTERVAL = Duration.ofSeconds(60);
+        MAX_ATTEMPTS = 5;
     }
 
-
     @Override
-    public void generateAndSend(String phone, Long chatId) {
+    @Transactional
+    public void generateAndSend(String phoneNumber, Long chatId) {
+        UserEntity user = userService.findByPhoneNumber(phoneNumber);
+
+        temporaryCodeRepository.findByUser_IdAndEnableTrue(user.getId())
+                .ifPresent(active -> {
+                    if (Duration.between(active.getCreatedAt(), Instant.now()).compareTo(RESEND_INTERVAL) < 0) {
+                        throw new RuntimeException("Подождите перед повторной отправкой кода");
+                    }
+                    // Гасим предыдущий активный код — иначе вставка новой
+                    // строки упадёт на partial unique индексе (один активный
+                    // код на пользователя).
+                    active.setEnable(false);
+                    temporaryCodeRepository.save(active);
+                });
+
         String code = generatedCode();
-        redisTemplate.opsForValue().set("authCode:" + phone, code, codeTTL);
+        Instant now = Instant.now();
+
+        temporaryCodeRepository.save(TemporaryCodeEntity.builder()
+                .user(user)
+                .code(code)
+                .createdAt(now)
+                .expiresAt(now.plus(CODE_TTL))
+                .attempts(0)
+                .enable(true)
+                .build());
+
         loginTelegramBot.sendTextMessage(chatId, "Ваш код: " + code);
     }
 
     @Override
-    public String verify(String phone, String code){
-        try {
-            String key = "authCode:" + phone;
-            String savedCode = redisTemplate.opsForValue().get(key);
+    @Transactional
+    public String verify(String phoneNumber, String code) {
+        UserEntity user = userService.findByPhoneNumber(phoneNumber);
 
-            if (savedCode == null) {
-                throw new RuntimeException("Неверный или истёкший код");
-            }
+        TemporaryCodeEntity active = temporaryCodeRepository.findByUser_IdAndEnableTrue(user.getId())
+                .orElseThrow(() -> new RuntimeException("Неверный или истёкший код"));
 
-            if (!savedCode.equals(code)) {
-                throw new RuntimeException("Неверный код");
-            }
-            redisTemplate.delete(key);
-            return jwtCore.jwtGenerator(UserDetailsImpl.build(userService.findByPhone(phone)));
-        }catch (Exception e){
-            throw new RuntimeException(e);
+        if (active.getExpiresAt().isBefore(Instant.now())) {
+            active.setEnable(false);
+            temporaryCodeRepository.save(active);
+            throw new RuntimeException("Код истёк, запросите новый");
         }
+
+        if (active.getAttempts() >= MAX_ATTEMPTS) {
+            active.setEnable(false);
+            temporaryCodeRepository.save(active);
+            throw new RuntimeException("Превышено число попыток, запросите новый код");
+        }
+
+        if (!active.getCode().equals(code)) {
+            active.setAttempts(active.getAttempts() + 1);
+            temporaryCodeRepository.save(active);
+            throw new RuntimeException("Неверный код");
+        }
+
+        active.setEnable(false);
+        temporaryCodeRepository.save(active);
+
+        return jwtCore.jwtGenerator(UserDetailsImpl.build(user));
     }
 
     @Override
     public String login(UserEntity userEntity) {
-        UserEntity entity = userService.findByPhone(userEntity.getPhone());
-        generateAndSend(entity.getPhone(), entity.getChatId());
+        UserEntity entity = userService.findByPhoneNumber(userEntity.getPhoneNumber());
+        generateAndSend(entity.getPhoneNumber(), entity.getChatId());
         return "Отправлен код в Telegram";
     }
 
     @Override
     public UserEntity getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String phone;
+        String phoneNumber = principal instanceof UserDetails
+                ? ((UserDetails) principal).getUsername()
+                : principal.toString();
 
-        if (principal instanceof UserDetails) {
-            phone = ((UserDetails) principal).getUsername();
-        } else {
-            phone = principal.toString();
-        }
-
-        return userService.findByPhone(phone);
+        return userService.findByPhoneNumber(phoneNumber);
     }
 
-    private String generatedCode(){
-        Integer number = 100000 + random.nextInt(900000);
+    private String generatedCode() {
+        int number = 100000 + random.nextInt(900000);
         return String.valueOf(number);
     }
-
 
 }
