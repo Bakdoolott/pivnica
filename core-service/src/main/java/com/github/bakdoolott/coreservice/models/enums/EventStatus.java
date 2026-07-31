@@ -1,4 +1,4 @@
-package com.github.bakdoolott.coreservice.event.enums;
+package com.github.bakdoolott.coreservice.models.enums;
 
 public enum EventStatus {
     ENABLE,

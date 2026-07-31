@@ -1,7 +1,6 @@
-package com.github.bakdoolott.coreservice.booking;
+package com.github.bakdoolott.coreservice.models;
 
-import com.github.bakdoolott.coreservice.booking.enums.PaymentStatus;
-import com.github.bakdoolott.coreservice.table.Tables;
+import com.github.bakdoolott.coreservice.models.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

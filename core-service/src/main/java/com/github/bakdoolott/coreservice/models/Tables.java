@@ -1,7 +1,6 @@
-package com.github.bakdoolott.coreservice.table;
+package com.github.bakdoolott.coreservice.models;
 
-import com.github.bakdoolott.coreservice.hall.Hall;
-import com.github.bakdoolott.coreservice.table.enums.TableStatus;
+import com.github.bakdoolott.coreservice.models.enums.TableStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

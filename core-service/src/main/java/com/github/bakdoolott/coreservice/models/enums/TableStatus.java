@@ -1,4 +1,4 @@
-package com.github.bakdoolott.coreservice.table.enums;
+package com.github.bakdoolott.coreservice.models.enums;
 
 public enum TableStatus {
     FREE,

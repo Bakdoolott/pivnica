@@ -1,6 +1,6 @@
-package com.github.bakdoolott.coreservice.hall;
+package com.github.bakdoolott.coreservice.models;
 
-import com.github.bakdoolott.coreservice.hall.enums.HallStatus;
+import com.github.bakdoolott.coreservice.models.enums.HallStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

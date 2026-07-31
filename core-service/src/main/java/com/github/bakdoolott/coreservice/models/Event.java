@@ -1,6 +1,6 @@
-package com.github.bakdoolott.coreservice.event;
+package com.github.bakdoolott.coreservice.models;
 
-import com.github.bakdoolott.coreservice.event.enums.EventStatus;
+import com.github.bakdoolott.coreservice.models.enums.EventStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.github.bakdoolott.coreservice.hall.enums;
+package com.github.bakdoolott.coreservice.models.enums;
 
 public enum HallStatus {
     ENABLE,
