@@ -1,0 +1,9 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: core-service
+
+jwt:
+  secret: aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
