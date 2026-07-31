@@ -43,4 +43,7 @@ public class Event {
     @Enumerated(EnumType.STRING)
     @Column(name = "event_status",nullable = false)
     EventStatus eventStatus;
+
+    @Column(nullable = false)
+    boolean enable = true;
 }

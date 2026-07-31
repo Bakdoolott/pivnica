@@ -36,4 +36,7 @@ public class Tables {
     @Enumerated(EnumType.STRING)
     @Column(name = "table_status",nullable = false)
     TableStatus tableStatus;
+
+    @Column(nullable = false)
+    boolean enable = true;
 }

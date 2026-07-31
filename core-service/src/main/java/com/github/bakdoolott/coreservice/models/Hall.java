@@ -16,7 +16,7 @@ public class Hall {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false)
     Integer floor;
 
     @Column(name = "hall_number",nullable = false,unique = true)
@@ -25,6 +25,9 @@ public class Hall {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     HallStatus hallStatus = HallStatus.ENABLE;
+
+    @Column(nullable = false)
+    boolean enable = true;
 
 
 }

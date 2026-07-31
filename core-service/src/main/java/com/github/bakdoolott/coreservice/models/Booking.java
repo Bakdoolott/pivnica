@@ -41,6 +41,9 @@ public class Booking {
     @Column(name = "phone_number", nullable = false)
     String phoneNumber;
 
+    @Column(nullable = false)
+    boolean enable = true;
+
 
 
 }
