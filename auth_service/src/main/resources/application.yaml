@@ -9,4 +9,5 @@ server:
 
 jwt:
   secret: ${JWT_SECRET:aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys}
-  time: 36000000
+  time: 3600000
+  refresh-time: 2592000000

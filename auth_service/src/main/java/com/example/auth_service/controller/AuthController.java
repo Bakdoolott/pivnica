@@ -1,6 +1,7 @@
 package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.request.LoginRequest;
+import com.example.auth_service.dto.request.RefreshRequest;
 import com.example.auth_service.dto.request.UserRequest;
 import com.example.auth_service.entity.model.UserEntity;
 import com.example.auth_service.service.AuthService;
@@ -26,5 +27,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
         return ResponseEntity.ok(authService.login(UserEntity.builder().phoneNumber(loginRequest.phone()).build()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request.refreshToken()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody RefreshRequest request) {
+        authService.logout(request.refreshToken());
+        return ResponseEntity.ok().build();
     }
 }
