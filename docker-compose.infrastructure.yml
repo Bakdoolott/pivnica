@@ -7,6 +7,7 @@ services:
     image: postgres:17
     container_name: postgres
     restart: always
+
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
@@ -23,6 +24,44 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JWT_SECRET=aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - CORE_SERVICE_URL=http://core-service:8082
+      - PAYMENT_SERVICE_URL=http://payment-service:8083
+    depends_on:
+      - postgres
+      - core-service
+    networks:
+      - backend
+
+  core-service:
+    build:
+      context: ./core-service
+      dockerfile: Dockerfile
+    container_name: core-service
+    restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JWT_SECRET=aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
+    depends_on:
+      - postgres
+    networks:
+      - backend
+
+
 
 volumes:
   postgres_data:
