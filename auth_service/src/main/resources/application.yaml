@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: auth-service
+  profiles:
+    active: db,tg
+
+server:
+  port: 8081
+
+jwt:
+  secret: ${JWT_SECRET:aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys}
+  time: 3600000
+  refresh-time: 2592000000
