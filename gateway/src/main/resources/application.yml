@@ -1,5 +1,6 @@
 server:
   port: 8080
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -9,6 +10,8 @@ spring:
 
   cloud:
     gateway:
+      x-forwarded:
+        enabled: true
       routes:
         - id: auth-service-route
           uri: ${AUTH_SERVICE_URL:http://localhost:8081}
