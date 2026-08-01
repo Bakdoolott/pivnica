@@ -1,0 +1,72 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-booking-table
+      author: Bakdoolott
+
+      changes:
+        - createSequence:
+            sequenceName: booking_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createTable:
+            tableName: book_tb
+
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: booking_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: date_time
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: payment_status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: id_table_tb
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: user_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: phone_number
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: enable
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_booking_table
+            baseTableName: book_tb
+            baseColumnNames: id_table_tb
+            referencedTableName: table_tb
+            referencedColumnNames: id

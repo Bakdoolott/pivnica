@@ -13,7 +13,12 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "hall_tb")
 public class Hall {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "hall_seq",
+            sequenceName = "hall_seq",
+            allocationSize = 50
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hall_seq")
     Long id;
 
     @Column(nullable = false)

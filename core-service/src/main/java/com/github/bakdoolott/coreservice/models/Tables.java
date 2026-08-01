@@ -16,7 +16,12 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "table_tb")
 public class Tables {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "table_seq",
+            sequenceName = "table_seq",
+            allocationSize = 50
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_seq")
     Long id;
 
     @Column(name = "table_number", nullable = false)

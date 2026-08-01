@@ -18,13 +18,18 @@ import java.time.LocalDateTime;
 @Table(name = "book_tb")
 public class Booking {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "booking_seq",
+            sequenceName = "booking_seq",
+            allocationSize = 50
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "booking_seq")
     Long id;
 
     @Column(name = "user_id",nullable = false)
     Long userId;
 
-    @Column(name = "dateTime",nullable = false)
+    @Column(name = "date_time",nullable = false)
     LocalDateTime dateTime;
 
     @Enumerated(EnumType.STRING)
@@ -43,7 +48,4 @@ public class Booking {
 
     @Column(nullable = false)
     boolean enable = true;
-
-
-
 }

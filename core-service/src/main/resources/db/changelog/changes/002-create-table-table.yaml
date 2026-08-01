@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-table-table
+      author: Bakdoolott
+
+      changes:
+        - createSequence:
+            sequenceName: table_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createTable:
+            tableName: table_tb
+
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: table_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: table_number
+                  type: INT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: x
+                  type: INT
+
+              - column:
+                  name: y
+                  type: INT
+
+              - column:
+                  name: place_county
+                  type: INT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: id_hall_tb
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: table_status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: enable
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_table_hall
+            baseTableName: table_tb
+            baseColumnNames: id_hall_tb
+            referencedTableName: hall_tb
+            referencedColumnNames: id

@@ -1,0 +1,67 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-event-table
+      author: Bakdoolott
+
+      changes:
+        - createSequence:
+            sequenceName: event_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createTable:
+            tableName: event
+
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: event_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: description
+                  type: TEXT
+
+              - column:
+                  name: image_url
+                  type: VARCHAR(500)
+
+              - column:
+                  name: image_name
+                  type: VARCHAR(255)
+
+              - column:
+                  name: starts_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: ends_at
+                  type: TIMESTAMP
+
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+
+              - column:
+                  name: event_status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: enable
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false

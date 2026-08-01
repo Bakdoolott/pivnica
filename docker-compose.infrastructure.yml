@@ -55,6 +55,11 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - JWT_SECRET=aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
+      - DB_CORE_HOST=postgres
+      - DB_CORE_PORT=5432
+      - DB_CORE_NAME=core_db
+      - DB_CORE_USERNAME=core_user
+      - DB_CORE_PASSWORD=core_strong_pass_456
     depends_on:
       - postgres
     networks:

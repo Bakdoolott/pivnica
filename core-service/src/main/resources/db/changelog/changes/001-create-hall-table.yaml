@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-hall-table
+      author: Bakdoolott
+
+      changes:
+        - createSequence:
+            sequenceName: hall_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createTable:
+            tableName: hall_tb
+
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: hall_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: floor
+                  type: INT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: hall_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+              - column:
+                  name: hall_status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: enable
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false

@@ -17,7 +17,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Event {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "event_seq",
+            sequenceName = "event_seq",
+            allocationSize = 50
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_seq")
     Long id;
 
     @Column(nullable = false, length = 255)
