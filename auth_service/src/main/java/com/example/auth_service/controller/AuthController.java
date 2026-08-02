@@ -2,7 +2,8 @@ package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.request.LoginRequest;
 import com.example.auth_service.dto.request.RefreshRequest;
-import com.example.auth_service.dto.request.UserRequest;
+import com.example.auth_service.dto.request.VerifyCodeRequest;
+import com.example.auth_service.dto.response.TokenResponse;
 import com.example.auth_service.entity.model.UserEntity;
 import com.example.auth_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -20,17 +21,17 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/verify-code")
-    public ResponseEntity<?> verifyCode(@RequestBody UserRequest request) {
+    public ResponseEntity<TokenResponse> verifyCode(@RequestBody VerifyCodeRequest request) {
         return ResponseEntity.ok(authService.verify(request.phone(), request.code()));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest){
         return ResponseEntity.ok(authService.login(UserEntity.builder().phoneNumber(loginRequest.phone()).build()));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+    public ResponseEntity<TokenResponse> refresh(@RequestBody RefreshRequest request) {
         return ResponseEntity.ok(authService.refresh(request.refreshToken()));
     }
 

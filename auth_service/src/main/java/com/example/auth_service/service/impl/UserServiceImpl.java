@@ -45,6 +45,37 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public UserEntity update(UserEntity entity) {
+        UserEntity existing = userRepository.findById(entity.getId())
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+        existing.setFirstName(entity.getFirstName());
+        existing.setLastName(entity.getLastName());
+        existing.setEmail(entity.getEmail());
+        return userRepository.save(existing);
+    }
+
+    @Override
+    @Transactional
+    public String delete(Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+        user.setEnable(false);
+        userRepository.save(user);
+        return "Аккаунт удалён";
+    }
+
+    @Override
+    public UserEntity findById(Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+        if (!user.isEnable()) {
+            throw new UsernameNotFoundException("Пользователь не найден");
+        }
+        return user;
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return UserDetailsImpl.build(findByPhoneNumber(username));
     }
