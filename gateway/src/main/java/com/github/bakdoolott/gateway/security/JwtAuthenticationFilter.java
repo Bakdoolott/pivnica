@@ -6,6 +6,7 @@ import io.jsonwebtoken.JwtException;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -26,6 +27,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        System.out.println("PATH = " + request.getURI().getPath());
         String path = request.getURI().getPath();
 
         ServerHttpRequest.Builder requestBuilder = request.mutate()
@@ -38,13 +40,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
         }
 
-        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
+        String token = extractToken(request);
+
+        if (token == null) {
+            return onError(exchange, HttpStatus.UNAUTHORIZED);
         }
-
-        String token = authHeader.substring(7);
 
         try {
             if (!jwtUtil.isTokenValid(token)) {
@@ -56,18 +57,36 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             Object userId = claims.get("userId");
             Object roles = claims.get("roles");
 
-            if(userId != null){
+            if (userId != null && roles != null) {
                 requestBuilder.header("X-User-Id", userId.toString());
-            }
-            if (roles != null){
                 requestBuilder.header("X-User-Roles", roles.toString());
             }
+
 
             return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
 
         } catch (JwtException e) {
             return onError(exchange, HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    private String extractToken(ServerHttpRequest request) {
+
+        // 1. Сначала Authorization (для мобильных клиентов)
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        // 2. Затем HttpOnly Cookie (для браузера)
+        HttpCookie cookie = request.getCookies().getFirst("access_token");
+
+        if (cookie != null) {
+            return cookie.getValue();
+        }
+
+        return null;
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, HttpStatus status) {
@@ -77,13 +96,13 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isPublicPath(String path) {
-        return path.startsWith("/api/v1/auth/")
+        return path.contains("/api/v1/auth")
                 || path.equals("/swagger-ui.html")
                 || path.equals("/swagger-ui/index.html")
                 || path.startsWith("/swagger-ui/")
                 || path.startsWith("/webjars/swagger-ui/")
                 || path.startsWith("/v3/api-docs/")
-                || path.startsWith("/docs/");
+                || path.matches("/docs/.*/v3/api-docs.*");
     }
 
     @Override
