@@ -32,7 +32,7 @@ public class Tables {
     Integer y;
 
     @Column(name = "place_county",nullable = false)
-    Integer placeCounty;
+    Integer placeCount;
 
     @ManyToOne
     @JoinColumn(name = "id_hall_tb", nullable = false)

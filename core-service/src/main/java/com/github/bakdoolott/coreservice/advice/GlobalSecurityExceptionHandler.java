@@ -1,4 +1,4 @@
-package com.github.bakdoolott.coreservice.error;
+package com.github.bakdoolott.coreservice.advice;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
