@@ -2,7 +2,7 @@ package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.request.UserRequest;
 import com.example.auth_service.dto.response.UserResponse;
-import com.example.auth_service.mapper.UserMapper;
+import com.example.auth_service.entity.model.UserEntity;import com.example.auth_service.mapper.UserMapper;
 import com.example.auth_service.service.AuthService;
 import com.example.auth_service.service.UserService;
 import jakarta.validation.Valid;
@@ -21,11 +21,12 @@ public class UserController {
 
     @PutMapping("/update-user")
     public ResponseEntity<UserResponse> update(@Valid @RequestBody UserRequest userRequest){
+        UserEntity entity = mapper.toEntity(userRequest);
+        entity.setId(authService.getCurrentUser().getId());
+
         return ResponseEntity.ok(
                 mapper.toResponseDto(
-                    service.update(
-                            mapper.toEntity(userRequest)
-                    )
+                    service.update(entity)
                 )
         );
     }

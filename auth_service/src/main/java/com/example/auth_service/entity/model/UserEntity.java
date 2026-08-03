@@ -35,7 +35,7 @@ public class UserEntity extends BaseEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private boolean enable = true;
+    private boolean enable = false;
 
     @ElementCollection(targetClass = RoleEnums.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))

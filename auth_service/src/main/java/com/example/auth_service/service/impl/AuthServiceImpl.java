@@ -67,15 +67,25 @@ public class AuthServiceImpl implements AuthService {
         String code = generatedCode();
         Instant now = Instant.now();
 
-        temporaryCodeRepository.save(TemporaryCodeEntity.builder()
-                .user(user)
-                .code(code)
-                .createdAt(now)
-                .expiresAt(now.plus(CODE_TTL))
-                .attempts(0)
-                .enable(true)
-                .build());
-
+        TemporaryCodeEntity entity = temporaryCodeRepository.findByUser_Id(user.getId())
+                        .orElse(null);
+        if(entity == null) {
+            temporaryCodeRepository.save(TemporaryCodeEntity.builder()
+                    .user(user)
+                    .code(code)
+                    .createdAt(now)
+                    .expiresAt(now.plus(CODE_TTL))
+                    .attempts(0)
+                    .enable(true)
+                    .build());
+        }else {
+            entity.setCode(code);
+            entity.setCreatedAt(now);
+            entity.setExpiresAt(now.plus(CODE_TTL));
+            entity.setAttempts(entity.getAttempts() + 1);
+            entity.setEnable(true);
+            temporaryCodeRepository.save(entity);
+        }
         loginTelegramBot.sendTextMessage(chatId, "Ваш код: " + code);
     }
 

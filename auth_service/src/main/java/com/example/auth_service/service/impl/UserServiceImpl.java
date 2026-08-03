@@ -5,6 +5,7 @@ import com.example.auth_service.entity.model.UserEntity;
 import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.security.UserDetailsImpl;
 import com.example.auth_service.service.UserService;
+import com.example.auth_service.util.PhoneNumberNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,6 +22,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserEntity save(UserEntity entity) {
+        
+        entity.setPhoneNumber(PhoneNumberNormalizer.normalize(entity.getPhoneNumber()));
+
         return userRepository.findByPhoneNumber(entity.getPhoneNumber())
                 .map(existing -> {
                     existing.setFirstName(entity.getFirstName());
@@ -36,9 +40,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEntity findByPhoneNumber(String phoneNumber) {
-        UserEntity user = userRepository.findByPhoneNumber(phoneNumber)
+        String normalized = PhoneNumberNormalizer.normalize(phoneNumber);
+
+        UserEntity user = userRepository.findByPhoneNumber(normalized)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-        if (!user.isEnable()) {
+        if (user.isEnable()) {
             throw new UsernameNotFoundException("Пользователь не найден");
         }
         return user;

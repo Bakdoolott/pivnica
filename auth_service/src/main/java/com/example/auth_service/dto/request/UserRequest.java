@@ -8,7 +8,7 @@ import java.util.Set;
 public record UserRequest(
         String firstName,
         String lastName,
-        Set<RoleEnums> role,
+        Set<RoleEnums> roles,
         @Email(message = "Некоректный формат email")
         String email
 ) {}
