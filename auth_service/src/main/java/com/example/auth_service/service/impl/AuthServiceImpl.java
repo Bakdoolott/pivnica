@@ -22,7 +22,6 @@ import java.time.Instant;
 
 @Service
 public class AuthServiceImpl implements AuthService {
-
     private final Duration CODE_TTL;
     private final Duration RESEND_INTERVAL;
     private final int MAX_ATTEMPTS;
@@ -153,5 +152,4 @@ public class AuthServiceImpl implements AuthService {
         int number = 100000 + random.nextInt(900000);
         return String.valueOf(number);
     }
-
 }
