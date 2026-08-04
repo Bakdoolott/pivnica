@@ -1,0 +1,1 @@
+ALTER TABLE user_tb ADD COLUMN IF NOT EXISTS email varchar;

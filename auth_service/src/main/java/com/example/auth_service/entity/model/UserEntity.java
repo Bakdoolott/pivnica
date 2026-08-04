@@ -27,12 +27,15 @@ public class UserEntity extends BaseEntity {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "email")
+    private String email;
+
     @Column(name = "chat_id", nullable = false)
     private Long chatId;
 
     @Builder.Default
     @Column(nullable = false)
-    private boolean enable = true;
+    private boolean enable = false;
 
     @ElementCollection(targetClass = RoleEnums.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
