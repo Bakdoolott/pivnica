@@ -1,5 +1,6 @@
 package com.github.bakdoolott.coreservice.models;
 
+import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
 import com.github.bakdoolott.coreservice.models.enums.PaymentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,13 +43,23 @@ public class Booking {
     @Column(name = "date_time",nullable = false)
     LocalDateTime dateTime;
 
+    @Column(name = "ends_at", nullable = false)
+    LocalDateTime endsAt;
+
+    @Column(name = "hold_until")
+    LocalDateTime holdUntil;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status",nullable = false)
     PaymentStatus paymentStatus;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "booking_status", nullable = false)
+    BookingStatus bookingStatus;
+
     @ManyToOne
     @JoinColumn(name = "id_table_tb", nullable = false)
-    private Tables tables;
+    Tables tables;
 
     @Column(name = "user_name", nullable = false)
     String userName;

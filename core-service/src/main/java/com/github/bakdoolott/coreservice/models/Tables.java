@@ -1,6 +1,6 @@
 package com.github.bakdoolott.coreservice.models;
 
-import com.github.bakdoolott.coreservice.models.enums.TableStatus;
+import com.github.bakdoolott.coreservice.models.enums.TableState;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -31,16 +31,16 @@ public class Tables {
 
     Integer y;
 
-    @Column(name = "place_county",nullable = false)
+    @Column(name = "place_count",nullable = false)
     Integer placeCount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "table_state", nullable = false)
+    TableState tableState = TableState.AVAILABLE;
 
     @ManyToOne
     @JoinColumn(name = "id_hall_tb", nullable = false)
-    private Hall hall;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "table_status",nullable = false)
-    TableStatus tableStatus;
+    Hall hall;
 
     @Column(nullable = false)
     boolean enable = true;

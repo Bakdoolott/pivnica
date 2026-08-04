@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
+import java.time.ZoneId;
 
 @Component
 @ConfigurationProperties(prefix = "booking")
@@ -16,4 +17,7 @@ public class BookingProperties {
     int holdMinutes = 15;
     int maxDepthDays = 30;
     LocalTime defaultStartTime = LocalTime.of(20, 0);
+
+    LocalTime closingTime = LocalTime.of(6,0);
+    ZoneId clubZone = ZoneId.of("Asia/Bishkek");
 }

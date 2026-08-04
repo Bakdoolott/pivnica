@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-add-booking-columns
+      author: Bakdoolott
+      context: production
+
+      changes:
+        - addColumn:
+            tableName: book_tb
+            columns:
+              - column:
+                  name: booking_status
+                  type: VARCHAR(50)
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+
+        - addColumn:
+            tableName: book_tb
+            columns:
+              - column:
+                  name: ends_at
+                  type: TIMESTAMP
+
+        - addColumn:
+            tableName: book_tb
+            columns:
+              - column:
+                  name: hold_until
+                  type: TIMESTAMP
+
+        - createIndex:
+            tableName: book_tb
+            indexName: idx_booking_status
+            columns:
+              - column:
+                  name: booking_status
+
+        - createIndex:
+            tableName: book_tb
+            indexName: idx_booking_ends_at
+            columns:
+              - column:
+                  name: ends_at
+
+        - createIndex:
+            tableName: book_tb
+            indexName: idx_booking_hold_until
+            columns:
+              - column:
+                  name: hold_until
