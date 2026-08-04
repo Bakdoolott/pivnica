@@ -20,6 +20,4 @@ public class TableOnDateDto {
     Integer y;
     Integer placeCount;
     TableStatus tableStatus;
-    @JsonIgnore
-    TableState state;
 }

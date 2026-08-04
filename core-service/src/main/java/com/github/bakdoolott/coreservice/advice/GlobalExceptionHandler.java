@@ -1,8 +1,8 @@
 package com.github.bakdoolott.coreservice.advice;
 
-import com.github.bakdoolott.coreservice.exceptions.ConflictExceptions;
-import com.github.bakdoolott.coreservice.exceptions.LogicExceptions;
-import com.github.bakdoolott.coreservice.exceptions.NotFoundExceptions;
+import com.github.bakdoolott.coreservice.exceptions.ConflictException;
+import com.github.bakdoolott.coreservice.exceptions.LogicException;
+import com.github.bakdoolott.coreservice.exceptions.NotFoundException;
 import com.github.bakdoolott.coreservice.response.GlobalResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,20 +19,20 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(NotFoundExceptions.class)
-    public ResponseEntity<GlobalResponse> notFound(NotFoundExceptions exception) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<GlobalResponse> notFound(NotFoundException exception) {
         log.warn("Not found: {}", exception.getMessage());
         return GlobalResponse.notFound(exception.getMessage()).toEntity();
     }
 
-    @ExceptionHandler(ConflictExceptions.class)
-    public ResponseEntity<GlobalResponse> conflict(ConflictExceptions exception) {
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<GlobalResponse> conflict(ConflictException exception) {
         log.warn("Conflict: {}", exception.getMessage());
         return GlobalResponse.conflict(exception.getMessage()).toEntity();
     }
 
-    @ExceptionHandler(LogicExceptions.class)
-    public ResponseEntity<GlobalResponse> logicError(LogicExceptions exception) {
+    @ExceptionHandler(LogicException.class)
+    public ResponseEntity<GlobalResponse> logicError(LogicException exception) {
         log.warn("Logic error: {}", exception.getMessage());
         return GlobalResponse.badRequest(exception.getMessage()).toEntity();
     }

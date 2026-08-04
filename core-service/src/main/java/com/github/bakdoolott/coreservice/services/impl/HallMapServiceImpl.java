@@ -1,15 +1,15 @@
 package com.github.bakdoolott.coreservice.services.impl;
 
 import com.github.bakdoolott.coreservice.config.BookingProperties;
-import com.github.bakdoolott.coreservice.exceptions.ConflictExceptions;
-import com.github.bakdoolott.coreservice.exceptions.LogicExceptions;
-import com.github.bakdoolott.coreservice.exceptions.NotFoundExceptions;
+import com.github.bakdoolott.coreservice.exceptions.ConflictException;
+import com.github.bakdoolott.coreservice.exceptions.LogicException;
+import com.github.bakdoolott.coreservice.exceptions.NotFoundException;
 import com.github.bakdoolott.coreservice.mappers.TableMapper;
 import com.github.bakdoolott.coreservice.models.Hall;
 import com.github.bakdoolott.coreservice.models.Tables;
 import com.github.bakdoolott.coreservice.models.dto.HallMapDto;
 import com.github.bakdoolott.coreservice.models.dto.TableOnDateDto;
-import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
+import com.github.bakdoolott.coreservice.models.enums.HallStatus;
 import com.github.bakdoolott.coreservice.models.enums.TableState;
 import com.github.bakdoolott.coreservice.models.enums.TableStatus;
 import com.github.bakdoolott.coreservice.repositories.BookingRepo;
@@ -21,9 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -34,9 +36,6 @@ public class HallMapServiceImpl implements HallMapService {
     private final TableMapper tableMapper;
     private final BookingRepo bookingRepo;
     private final BookingProperties bookingProperties;
-
-    private static final Set<BookingStatus> ACTIVE_STATUSES =
-            EnumSet.of(BookingStatus.PENDING, BookingStatus.CONFIRMED);
 
     public HallMapServiceImpl(HallRepo hallRepo, TableRepo tableRepo, TableMapper tableMapper, BookingRepo bookingRepo, BookingProperties bookingProperties) {
         this.hallRepo = hallRepo;
@@ -52,9 +51,9 @@ public class HallMapServiceImpl implements HallMapService {
     public HallMapDto getHallMap(Long hallId, LocalDate date) {
         ZoneId clubZone = bookingProperties.getClubZone();
 
-        ZonedDateTime now = ZonedDateTime.now(clubZone);
-        LocalDate today = now.toLocalDate();
-        LocalDateTime currentDateTime = now.toLocalDateTime();
+        ZonedDateTime nowZoned = ZonedDateTime.now(clubZone);
+        LocalDate today = nowZoned.toLocalDate();
+        LocalDateTime now = nowZoned.toLocalDateTime();
 
         LocalDate targetDate;
         if (date != null) {
@@ -64,27 +63,27 @@ public class HallMapServiceImpl implements HallMapService {
         }
 
         LocalDate maxDate = today.plusDays(bookingProperties.getMaxDepthDays());
-
         validateDate(targetDate,today,maxDate);
 
         Hall hall = hallRepo.findById(hallId)
-                .orElseThrow(() -> new NotFoundExceptions("Зал с ID " + hallId + " не найден"));
-        if(!hall.isEnable()){
-            throw new ConflictExceptions("Зал с ID " + hallId + " временно недоступен");
-        }
-        List<Tables> tables = tableRepo.findByHallIdAndEnableTrueOrderByTableNumberAsc(hallId);
+                .orElseThrow(() -> new NotFoundException("Зал с ID " + hallId + " не найден"));
 
+        if(!hall.isEnable() || hall.getHallStatus() == HallStatus.UNAVAILABLE){
+            throw new ConflictException("Зал с ID " + hallId + " временно недоступен");
+        }
+
+        List<Tables> tables = tableRepo.findByHallIdAndEnableTrueOrderByTableNumberAsc(hallId);
         List<TableOnDateDto> tableOnDateDtos = tableMapper.tablesToTableOnDateDtoList(tables);
 
-        LocalDateTime nightStart = targetDate.atTime(bookingProperties.getDefaultStartTime());
+        NightInterval night = resolveNightInterval(targetDate);
 
-        LocalDateTime nightEnd = targetDate.plusDays(1).atTime(bookingProperties.getClosingTime());
+        Set<Long> bookedTablesIds = bookingRepo.findBookedTableIds(hallId,night.start(),
+                night.end(),now);
 
-        Set<Long> bookedTableIds = bookingRepo.findBookedTableIds(hallId,nightStart,nightEnd,ACTIVE_STATUSES,currentDateTime);
+        applyTableStatuses(tables,tableOnDateDtos,bookedTablesIds);
 
-        applyTableStatuses(tableOnDateDtos,bookedTableIds);
-
-        return new HallMapDto(hall.getId(), hall.getHallNumber(), hall.getFloor(), targetDate, today, maxDate, tableOnDateDtos);
+        return new HallMapDto(hall.getId(), hall.getHallNumber(),hall.getFloor(),
+                targetDate,today,maxDate,tableOnDateDtos);
     }
 
     private void validateDate(
@@ -93,33 +92,52 @@ public class HallMapServiceImpl implements HallMapService {
             LocalDate maxDate
     ) {
         if (targetDate.isBefore(today)) {
-            throw new LogicExceptions("Нельзя выбрать прошедшую дату");
+            throw new LogicException("Нельзя выбрать прошедшую дату");
         }
         if (targetDate.isAfter(maxDate)) {
-            throw new LogicExceptions("Бронирование доступно максимум на " +
+            throw new LogicException("Бронирование доступно максимум на " +
                     bookingProperties.getMaxDepthDays() + " дней");
         }
     }
 
-    private void applyTableStatuses(
-            List<TableOnDateDto> tableDtos,
-            Set<Long> bookedTableIds) {
-        for (TableOnDateDto tableDto : tableDtos) {
-            if (tableDto.getState() == TableState.UNAVAILABLE) {
-                tableDto.setTableStatus(TableStatus.UNAVAILABLE);
-                if (bookedTableIds.contains(tableDto.getId())) {
-                    log.warn("Активная бронь на недоступном столике ID: {}", tableDto.getId());
-                }
-                continue;
-            }
-            TableStatus status;
-            if (bookedTableIds.contains(tableDto.getId())) {
-                status = TableStatus.BOOKED;
-            } else {
-                status = TableStatus.FREE;
-            }
-            tableDto.setTableStatus(status);
+    private void applyTableStatuses(List<Tables> tables,
+                                    List<TableOnDateDto> tableDtos,
+                                    Set<Long>bookedTableIds){
+        Map<Long,Tables> tablesMap = tables.stream()
+                .collect(Collectors.toMap(Tables::getId, Function.identity()));
+        for(TableOnDateDto dto : tableDtos){
+            Tables entity = tablesMap.get(dto.getId());
+            if(entity==null){
+                log.error("Cтолик с ID {} не найден", dto.getId());
 
+                throw new IllegalStateException("Ошибка соответствия столиков");
+            }
+            if(entity.getTableState() == TableState.UNAVAILABLE){
+                if(bookedTableIds.contains(entity.getId())){
+                    log.warn("Активная бронь недоступного столика ID: {}",entity.getId());
+                }
+                dto.setTableStatus(TableStatus.UNAVAILABLE);
+            }else {
+                dto.setTableStatus(bookedTableIds.contains(entity.getId())
+                        ? TableStatus.BOOKED
+                        : TableStatus.FREE);
+            }
         }
     }
+    private NightInterval resolveNightInterval(LocalDate targetDate){
+        LocalTime startTime = bookingProperties.getDefaultStartTime();
+        LocalTime closingTime = bookingProperties.getClosingTime();
+
+        LocalDateTime nightStart = targetDate.atTime(startTime);
+        LocalDateTime nightEnd;
+
+        if(closingTime.isBefore(startTime) || closingTime.equals(startTime)){
+            nightEnd = targetDate.plusDays(1).atTime(closingTime);
+        }else {
+            nightEnd = targetDate.atTime(closingTime);
+        }
+        return new NightInterval(nightStart,nightEnd);
+    }
+
+    private record NightInterval(LocalDateTime start, LocalDateTime end) {}
 }

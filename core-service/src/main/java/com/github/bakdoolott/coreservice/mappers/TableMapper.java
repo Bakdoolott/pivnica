@@ -9,8 +9,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface TableMapper {
-    @Mapping(target = "state",source = "tableState")
-    @Mapping(target = "tableStatus",ignore = true)
+    @Mapping(target = "tableStatus", ignore = true)
     TableOnDateDto tableToTableOnDateDto(Tables tables);
 
     List<TableOnDateDto> tablesToTableOnDateDtoList(List<Tables> tables);
