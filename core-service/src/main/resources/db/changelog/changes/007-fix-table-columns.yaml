@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-fix-table-columns
+      author: Viktor
+      changes:
+        - renameColumn:
+            tableName: table_tb
+            oldColumnName: place_county
+            newColumnName: place_count
+            columnDataType: INT
+
+        - renameColumn:
+            tableName: table_tb
+            oldColumnName: table_status
+            newColumnName: table_state
+            columnDataType: VARCHAR(50)

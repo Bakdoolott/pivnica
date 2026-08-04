@@ -1,8 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 005-add-booking-columns
-      author: Bakdoolott
-      context: production
+      author: Viktor
 
       changes:
         - addColumn:

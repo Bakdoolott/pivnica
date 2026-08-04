@@ -1,15 +1,15 @@
 databaseChangeLog:
   - include:
       file: db/changelog/changes/001-create-hall-table.yaml
-
   - include:
       file: db/changelog/changes/002-create-table-table.yaml
-
   - include:
       file: db/changelog/changes/003-create-booking-table.yaml
-
   - include:
       file: db/changelog/changes/004-create-event-table.yaml
-
   - include:
-        file: db/changelog/changes/005-add-booking-columns.yaml
+      file: db/changelog/changes/005-add-booking-columns.yaml
+  - include:
+      file: db/changelog/changes/006-add-missing-booking-columns.yaml
+  - include:
+      file: db/changelog/changes/007-fix-table-columns.yaml
