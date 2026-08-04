@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -16,5 +17,8 @@ public class HallMapDto {
     Long hallId;
     String hallNumber;
     Integer floor;
+    LocalDate date;
+    LocalDate minDate;
+    LocalDate maxDate;
     List<TableOnDateDto> tableOnDateDtos;
 }
