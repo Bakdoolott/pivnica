@@ -68,10 +68,12 @@ public class HallMapServiceImpl implements HallMapService {
         Hall hall = hallRepo.findById(hallId)
                 .orElseThrow(() -> new NotFoundException("Зал с ID " + hallId + " не найден"));
 
-        if(!hall.isEnable() || hall.getHallStatus() == HallStatus.UNAVAILABLE){
+        if (!hall.isEnable()) {
+            throw new NotFoundException("Зал с ID " + hallId + " не найден");
+        }
+        if (hall.getHallStatus() == HallStatus.UNAVAILABLE) {
             throw new ConflictException("Зал с ID " + hallId + " временно недоступен");
         }
-
         List<Tables> tables = tableRepo.findByHallIdAndEnableTrueOrderByTableNumberAsc(hallId);
         List<TableOnDateDto> tableOnDateDtos = tableMapper.tablesToTableOnDateDtoList(tables);
 
