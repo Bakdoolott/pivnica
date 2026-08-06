@@ -53,6 +53,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserEntity update(UserEntity entity) {
+        System.out.println(entity.toString());
         UserEntity existing = userRepository.findById(entity.getId())
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
         existing.setFirstName(entity.getFirstName());
@@ -66,7 +67,7 @@ public class UserServiceImpl implements UserService {
     public String delete(Long id) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-        user.setEnable(false);
+        user.setEnable(true);
         userRepository.save(user);
         return "Аккаунт удалён";
     }
@@ -75,7 +76,7 @@ public class UserServiceImpl implements UserService {
     public UserEntity findById(Long id) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-        if (!user.isEnable()) {
+        if (user.isEnable()) {
             throw new UsernameNotFoundException("Пользователь не найден");
         }
         return user;

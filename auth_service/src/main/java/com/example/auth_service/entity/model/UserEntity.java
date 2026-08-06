@@ -43,4 +43,18 @@ public class UserEntity extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Set<RoleEnums> roles;
 
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "phoneNumber='" + phoneNumber + '\'' +
+                ", tgUserName='" + tgUserName + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", chatId=" + chatId +
+                ", enable=" + enable +
+                ", roles=" + roles +
+                ", id=" + id +
+                '}';
+    }
 }

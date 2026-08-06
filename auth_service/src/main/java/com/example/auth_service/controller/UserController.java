@@ -1,6 +1,7 @@
 package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.request.UserRequest;
+import com.example.auth_service.dto.request.UserUpdateRequest;
 import com.example.auth_service.dto.response.UserResponse;
 import com.example.auth_service.entity.model.UserEntity;import com.example.auth_service.mapper.UserMapper;
 import com.example.auth_service.service.AuthService;
@@ -20,13 +21,13 @@ public class UserController {
     private final AuthService authService;
 
     @PutMapping("/update-user")
-    public ResponseEntity<UserResponse> update(@Valid @RequestBody UserRequest userRequest){
-        UserEntity entity = mapper.toEntity(userRequest);
-        entity.setId(authService.getCurrentUser().getId());
-
+    public ResponseEntity<UserResponse> update(@Valid @RequestBody UserUpdateRequest request){
+        System.out.println(request.toString());
         return ResponseEntity.ok(
                 mapper.toResponseDto(
-                    service.update(entity)
+                    service.update(
+                            mapper.toEntity(request)
+                    )
                 )
         );
     }
@@ -42,12 +43,28 @@ public class UserController {
         );
     }
 
+    @GetMapping("/get-user/{id}")
+    public ResponseEntity<UserResponse> getUserId(@PathVariable Long id){
+        return ResponseEntity.ok(
+                mapper.toResponseDto(
+                        service.findById(id)
+                )
+        );
+    }
+
     @DeleteMapping("/delete-user")
     public ResponseEntity<String> deleteUser(){
         return ResponseEntity.ok(
                 service.delete(
                         authService.getCurrentUser().getId()
                 )
+        );
+    }
+
+    @DeleteMapping("/delete-user/{id}")
+    public ResponseEntity<String> deleteUserId(@PathVariable Long id){
+        return ResponseEntity.ok(
+                service.delete(id)
         );
     }
 }
