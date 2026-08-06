@@ -1,6 +1,7 @@
 package com.example.auth_service.mapper;
 
 import com.example.auth_service.dto.request.UserRequest;
+import com.example.auth_service.dto.request.UserUpdateRequest;
 import com.example.auth_service.dto.request.VerifyCodeRequest;
 import com.example.auth_service.dto.response.UserResponse;
 import com.example.auth_service.entity.model.UserEntity;
@@ -12,5 +13,6 @@ import org.mapstruct.ReportingPolicy;
 public abstract class UserMapper {
 
     public abstract UserEntity toEntity(UserRequest request);
+    public abstract UserEntity toEntity(UserUpdateRequest request);
     public abstract UserResponse toResponseDto(UserEntity entity);
 }
