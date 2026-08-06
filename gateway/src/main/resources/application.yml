@@ -55,6 +55,21 @@ spring:
           filters:
             - 'RewritePath=/docs/payment/(?<segment>.*), /$\{segment}'
 
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - http://localhost:3000
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
 springdoc:
   swagger-ui:
     urls:
