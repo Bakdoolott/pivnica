@@ -18,5 +18,5 @@ public interface TableRepo extends JpaRepository<Tables,Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from Tables t where t.id = :id")
     Optional<Tables> findByIdForUpdate(@Param("id") Long id);
-
+    Optional<Tables> findByIdAndEnable(Long id, boolean enable);
 }

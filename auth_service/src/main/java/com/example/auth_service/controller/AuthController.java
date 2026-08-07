@@ -48,7 +48,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("Strict")
-//                .path("/api/v1/auth/web")
+//                .path("/api/v1/auth/web") в prod нужно включить этот путь
                 .path("/")
                 .maxAge(Duration.ofHours(12))
                 .build();

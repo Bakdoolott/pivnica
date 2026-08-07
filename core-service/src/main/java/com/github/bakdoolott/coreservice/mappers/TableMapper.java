@@ -2,6 +2,9 @@ package com.github.bakdoolott.coreservice.mappers;
 
 import com.github.bakdoolott.coreservice.models.Tables;
 import com.github.bakdoolott.coreservice.models.dto.TableOnDateDto;
+import com.github.bakdoolott.coreservice.models.dto.TablesDto;
+import com.github.bakdoolott.coreservice.models.dto.response.TableResponse;
+import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -13,4 +16,18 @@ public interface TableMapper {
     TableOnDateDto tableToTableOnDateDto(Tables tables);
 
     List<TableOnDateDto> tablesToTableOnDateDtoList(List<Tables> tables);
+
+    @Mapping(
+            source = "hall.id",
+            target = "hallId"
+    )
+    TablesDto toDto(Tables entity);
+
+    @InheritConfiguration
+    Tables toEntity(TablesDto dto);
+
+    @InheritConfiguration
+    TableResponse toResponse(Tables entity);
+
+    List<TableResponse> toResponseList(List<Tables> tables);
 }

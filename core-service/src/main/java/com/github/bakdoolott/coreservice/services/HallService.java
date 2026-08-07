@@ -9,6 +9,8 @@ import java.util.List;
 public interface HallService {
     HallDto create(CreateHallRequest request);
     HallDto update(UpdateHallRequest request);
+    HallDto findById(Long id);
     List<HallDto> getAll();
     void deleteById(Long id);
+    Boolean isExistById(Long id);
 }
