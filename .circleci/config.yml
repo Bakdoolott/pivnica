@@ -32,8 +32,8 @@ jobs:
             }
             
             build_service "gateway" "mirlanuulubakdoolot293/gateway"
-            # build_service "auth_service" "mirlanuulubakdoolot293/auth"
-            # build_service "core-service" "mirlanuulubakdoolot293/core"
+             build_service "auth_service" "mirlanuulubakdoolot293/auth"
+             build_service "core-service" "mirlanuulubakdoolot293/core"
             # build_service "payment-service" "mirlanuulubakdoolot293/payment"
 
 workflows:
