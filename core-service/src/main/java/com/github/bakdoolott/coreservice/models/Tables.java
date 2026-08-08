@@ -55,5 +55,6 @@ public class Tables {
     Hall hall;
 
     @Column(nullable = false)
+    @Builder.Default
     boolean enable = true;
 }

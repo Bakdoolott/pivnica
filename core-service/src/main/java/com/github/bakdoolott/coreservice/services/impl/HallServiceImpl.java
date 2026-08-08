@@ -6,6 +6,7 @@ import com.github.bakdoolott.coreservice.models.Hall;
 import com.github.bakdoolott.coreservice.models.dto.HallDto;
 import com.github.bakdoolott.coreservice.models.dto.request.CreateHallRequest;
 import com.github.bakdoolott.coreservice.models.dto.request.UpdateHallRequest;
+import com.github.bakdoolott.coreservice.models.dto.response.HallResponse;
 import com.github.bakdoolott.coreservice.models.enums.HallStatus;
 import com.github.bakdoolott.coreservice.repositories.HallRepo;
 import com.github.bakdoolott.coreservice.services.HallService;
@@ -23,27 +24,34 @@ public class HallServiceImpl implements HallService {
 
     @Override
     @Transactional
-    public HallDto create(CreateHallRequest request) {
+    public HallResponse create(CreateHallRequest request) {
         Hall hall = Hall.builder()
                 .floor(request.floor())
                 .hallNumber(request.hallNumber())
                 .hallStatus(request.hallStatus())
                 .build();
 
-        return mapper.toDto(repository.save(hall));
+        return mapper.toResponse(repository.save(hall));
     }
 
     @Override
     @Transactional
-    public HallDto update(UpdateHallRequest request) {
+    public HallResponse update(UpdateHallRequest request) {
         Hall hall = repository.findByIdAndEnable(request.id(), true).orElseThrow(
-                () -> new NotFoundException("Entity with id: " + request.id() + " not found"));
+                () -> new NotFoundException("Hall with id: " + request.id() + " not found"));
         hall.setFloor(request.floor());
         hall.setHallNumber(request.hallNumber());
         hall.setHallStatus(request.hallStatus());
 
-        return mapper.toDto(
+        return mapper.toResponse(
                 repository.save(hall)
+        );
+    }
+
+    @Override
+    public HallResponse getById(Long id) {
+        return mapper.toResponse(
+                findById(id)
         );
     }
 
@@ -57,8 +65,10 @@ public class HallServiceImpl implements HallService {
     }
 
     @Override
-    public List<HallDto> getAll() {
-        return repository.findAllByEnableAndHallStatus(true, HallStatus.ENABLE);
+    public List<HallResponse> getAll() {
+        return mapper.toResponseList(
+                repository.findAllByHallStatusAndEnable(HallStatus.ENABLE, true)
+        );
     }
 
     @Override

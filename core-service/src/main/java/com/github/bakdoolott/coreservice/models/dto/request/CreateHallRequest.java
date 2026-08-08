@@ -4,14 +4,8 @@ import com.github.bakdoolott.coreservice.models.enums.HallStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record CreateHallRequest(
-        @NotNull
-        Integer floor,
-
-        @NotBlank
-        String hallNumber,
-
-        @NotNull
-        HallStatus hallStatus
+public record CreateHallRequest(@NotNull Integer floor,
+                                @NotBlank String hallNumber,
+                                @NotNull HallStatus hallStatus
 )
 {}

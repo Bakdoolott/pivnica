@@ -23,10 +23,16 @@ public interface TableMapper {
     )
     TablesDto toDto(Tables entity);
 
+
+    TableResponse toResponse(TablesDto entity);
+
     @InheritConfiguration
     Tables toEntity(TablesDto dto);
 
-    @InheritConfiguration
+    @Mapping(
+            source = "hall.id",
+            target = "hallId"
+    )
     TableResponse toResponse(Tables entity);
 
     List<TableResponse> toResponseList(List<Tables> tables);

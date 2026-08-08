@@ -47,5 +47,6 @@ public class Hall {
     HallStatus hallStatus = HallStatus.ENABLE;
 
     @Column(nullable = false)
+    @Builder.Default
     boolean enable = true;
 }
