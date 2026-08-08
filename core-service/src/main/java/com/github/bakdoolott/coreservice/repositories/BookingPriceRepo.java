@@ -12,11 +12,13 @@ import java.util.Optional;
 @Repository
 public interface BookingPriceRepo extends JpaRepository<BookingPrice,Long> {
     @Query("""
-            select p from BookingPrice p
-            where p.enable = true
-              and p.startAt <= :now
-              and (p.endAt is null or p.endAt > :now)
-            """)
+        select p from BookingPrice p
+        where p.enable = true
+          and p.startAt <= :now
+          and (p.endAt is null or p.endAt > :now)
+        order by p.startAt desc
+        limit 1
+        """)
     Optional<BookingPrice> findActiveAt(@Param("now") LocalDateTime now);
 
     Optional<BookingPrice> findByEndAtIsNullAndEnableTrue();

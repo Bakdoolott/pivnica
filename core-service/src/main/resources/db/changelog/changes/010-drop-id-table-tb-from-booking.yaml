@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-drop-id-table-tb
+      author: Viktor
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: book_tb
+            constraintName: fk_booking_table
+        - dropColumn:
+            tableName: book_tb
+            columnName: id_table_tb
