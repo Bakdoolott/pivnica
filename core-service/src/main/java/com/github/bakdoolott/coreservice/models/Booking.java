@@ -1,17 +1,8 @@
 package com.github.bakdoolott.coreservice.models;
 
+import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
 import com.github.bakdoolott.coreservice.models.enums.PaymentStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,13 +33,32 @@ public class Booking {
     @Column(name = "date_time",nullable = false)
     LocalDateTime dateTime;
 
+    @Column(name = "ends_at", nullable = false)
+    LocalDateTime endsAt;
+
+    @Column(name = "guest_count", nullable = false)
+    Integer guestCount;
+
+    @Column(name = "comment", length = 500)
+    String comment;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    LocalDateTime createdAt;
+
+    @Column(name = "hold_until")
+    LocalDateTime holdUntil;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status",nullable = false)
     PaymentStatus paymentStatus;
 
-    @ManyToOne
+    @Enumerated(EnumType.STRING)
+    @Column(name = "booking_status", nullable = false)
+    BookingStatus bookingStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_table_tb", nullable = false)
-    private Tables tables;
+    Tables tables;
 
     @Column(name = "user_name", nullable = false)
     String userName;
@@ -58,4 +68,7 @@ public class Booking {
 
     @Column(nullable = false)
     boolean enable = true;
+
+    @Version
+    Long version;
 }

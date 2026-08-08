@@ -36,7 +36,7 @@ databaseChangeLog:
                   type: INT
 
               - column:
-                  name: place_county
+                  name: place_count
                   type: INT
                   constraints:
                     nullable: false
@@ -48,7 +48,7 @@ databaseChangeLog:
                     nullable: false
 
               - column:
-                  name: table_status
+                  name: table_state
                   type: VARCHAR(50)
                   constraints:
                     nullable: false
@@ -60,9 +60,16 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
+
         - addForeignKeyConstraint:
             constraintName: fk_table_hall
             baseTableName: table_tb
             baseColumnNames: id_hall_tb
             referencedTableName: hall_tb
             referencedColumnNames: id
+
+
+        - addUniqueConstraint:
+            tableName: table_tb
+            columnNames: id_hall_tb, table_number
+            constraintName: uk_table_number_hall
