@@ -24,7 +24,7 @@ public class BookingPriceController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNRE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNER')")
     @Operation(summary = "Создание цены бронирования")
     public ResponseEntity<PriceResponse> create(@Valid @RequestBody PriceCreateDto request){
         return new ResponseEntity<>(service.createPrice(request), HttpStatus.CREATED);

@@ -62,6 +62,9 @@ public class BookingServiceImpl implements BookingService {
         validateBookingDate(bookingDate,nowZoned.toLocalDate());
 
         LocalDateTime startAt = bookingDate.atTime(startTime);
+        if(startAt.isBefore(now)){
+            throw new LogicException("Нельзя создать бронь в прошлом");
+        }
         LocalDateTime endAt = calculateEndAt(startAt,bookingProperties.getClosingTime());
 
         List<Long> requestedIds = dto.getTableIds().stream().distinct().toList();

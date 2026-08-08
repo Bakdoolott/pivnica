@@ -7,9 +7,18 @@ import com.github.bakdoolott.coreservice.models.dto.PriceSummaryDto;
 import com.github.bakdoolott.coreservice.models.dto.TableSummaryDto;
 import com.github.bakdoolott.coreservice.models.dto.response.BookingResponse;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+import java.util.Set;
+
+@Mapper(componentModel = "spring", uses = {BookingPriceMapper.class})
 public interface BookingMapper {
+    @Mapping(target = "tables", source = "tables")
+    @Mapping(target = "price", source = "price")
     BookingResponse toResponse(Booking booking);
+
     TableSummaryDto toTableSummary(Tables table);
+
+    List<TableSummaryDto> toTableSummaryList(Set<Tables> tables);
 }
