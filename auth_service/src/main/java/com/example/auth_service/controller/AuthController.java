@@ -2,7 +2,7 @@ package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.request.LoginRequest;
 import com.example.auth_service.dto.request.RefreshRequest;
-import com.example.auth_service.dto.request.UserRequest;
+import com.example.auth_service.dto.request.VerifyCodeRequest;
 import com.example.auth_service.dto.response.TokenResponse;
 import com.example.auth_service.entity.model.UserEntity;
 import com.example.auth_service.service.AuthService;
@@ -29,12 +29,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/mobile/verify-code")
-    public ResponseEntity<?> verifyMobileCode(@RequestBody UserRequest request) {
+    public ResponseEntity<?> verifyMobileCode(@RequestBody VerifyCodeRequest request) {
         return ResponseEntity.ok(authService.verify(request.phone(), request.code()));
     }
 
     @PostMapping("/web/verify-code")
-    public ResponseEntity<Void> verifyWebCode(@RequestBody UserRequest request){
+    public ResponseEntity<Void> verifyWebCode(@RequestBody VerifyCodeRequest request){
         TokenResponse token = authService.verify(request.phone(), request.code());
 
         ResponseCookie accessCookie = ResponseCookie.from("access_token", token.accessToken())

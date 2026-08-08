@@ -70,8 +70,6 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
 
-
-
 springdoc:
   swagger-ui:
     urls:
