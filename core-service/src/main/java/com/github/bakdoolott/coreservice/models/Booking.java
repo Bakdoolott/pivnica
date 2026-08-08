@@ -58,7 +58,7 @@ public class Booking {
     @Column(name = "booking_status", nullable = false)
     BookingStatus bookingStatus;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "booking_table_tb",
             joinColumns = @JoinColumn(name = "booking_id"),
@@ -72,7 +72,7 @@ public class Booking {
     @Column(name = "phone_number", nullable = false)
     String phoneNumber;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "price_id", nullable = false)
     BookingPrice price;
 

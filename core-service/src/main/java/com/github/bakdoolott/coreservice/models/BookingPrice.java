@@ -23,7 +23,7 @@ public class BookingPrice {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "booking_price_seq")
     Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 12, scale = 2)
     BigDecimal price;
 
     @Column(name = "created_at", nullable = false)

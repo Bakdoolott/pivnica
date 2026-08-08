@@ -21,6 +21,6 @@ public interface BookingPriceRepo extends JpaRepository<BookingPrice,Long> {
         """)
     Optional<BookingPrice> findActiveAt(@Param("now") LocalDateTime now);
 
-    Optional<BookingPrice> findByEndAtIsNullAndEnableTrue();
+    Optional<BookingPrice> findFirstByEnableTrueAndEndAtIsNullOrderByStartAtDesc();
 }
 
