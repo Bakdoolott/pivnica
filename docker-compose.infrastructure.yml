@@ -87,6 +87,60 @@ services:
     networks:
       - backend
 
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: kafka
+    restart: always
+    ports:
+      - "9092:9092"    # для сервисов внутри docker-сети (advertised как kafka:9092)
+      - "29092:29092"  # для приложений, запущенных на хосте (localhost:29092)
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: pivnica-kafka-cluster-01
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - backend
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    restart: always
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JWT_SECRET=aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
+      - DB_PAYMENT_HOST=postgres
+      - DB_PAYMENT_PORT=5432
+      - DB_PAYMENT_NAME=payment_db
+      - DB_PAYMENT_USERNAME=payment_user
+      - DB_PAYMENT_PASSWORD=payment_strong_pass_789
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - PAYMENT_EVENTS_TOPIC=payment.events
+      - PAYMENT_MOCK_MODE=ALWAYS_SUCCESS
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - backend
+
 
 
 
