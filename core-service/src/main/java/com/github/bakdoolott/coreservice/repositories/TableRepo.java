@@ -15,4 +15,14 @@ import java.util.Optional;
 public interface TableRepo extends JpaRepository<Tables,Long> {
     List<Tables> findByHallIdAndEnableTrueOrderByTableNumberAsc(Long hallId);
     Optional<Tables> findByIdAndEnable(Long id, boolean enable);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            select t from Tables t
+            where t.id in :ids
+              and t.hall.id = :hallId
+              and t.enable = true
+            order by t.id
+            """)
+    List<Tables> findEnabledByIdsAndHallForUpdate(@Param("ids") List<Long> ids,
+                                                  @Param("hallId") Long hallId);
 }
