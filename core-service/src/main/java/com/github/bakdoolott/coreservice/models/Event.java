@@ -51,4 +51,7 @@ public class Event {
 
     @Column(nullable = false)
     boolean enable = true;
+
+    @Column(name = "created_at", nullable = false)
+    LocalDateTime createdAt;
 }

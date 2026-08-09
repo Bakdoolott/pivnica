@@ -1,5 +1,6 @@
 package com.github.bakdoolott.coreservice.error;
 
+import com.github.bakdoolott.coreservice.service.exceptions.EventNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
