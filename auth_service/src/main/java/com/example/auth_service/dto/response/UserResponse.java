@@ -10,5 +10,5 @@ public record UserResponse(
         String firstName,
         String lastName,
         String email,
-        Set<RoleEnums> role
+        Set<RoleEnums> roles
 ) {}

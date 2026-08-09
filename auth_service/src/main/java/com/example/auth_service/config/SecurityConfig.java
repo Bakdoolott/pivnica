@@ -5,6 +5,8 @@ import com.example.auth_service.security.TokenFilter;
 import com.example.auth_service.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final JwtCore jwtCore;
@@ -30,9 +33,33 @@ public class SecurityConfig {
                 .sessionManagement(sm ->
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/users/**").authenticated()
+                        //AuthContoller
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/mobile/verify-code",
+                                "/api/v1/auth/web/verify-code",
+                                "/api/v1/auth/mob/refresh",
+                                "/api/v1/auth/web/refresh"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/auth/mobile/logout",
+                                "/api/v1/auth/web/logout"
+                        ).authenticated()
+                        //UserController
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/v1/auth/users/update-user-roles/{id}",
+                                "/api/v1/auth/users/remove-user-roles/{id}")
+                                .hasAnyRole("OWNER")
+                        .requestMatchers(
+                                "/api/v1/auth/users/delete-user/{id}",
+                                "/api/v1/auth/users/get-user/{id}",
+                                "/api/v1/auth/users/update-user/admin")
+                                .hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(
+                                "/api/v1/auth/users/update-user",
+                                "/api/v1/auth/users/delete-user")
+                                .authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new TokenFilter(jwtCore, userDetailsService), UsernamePasswordAuthenticationFilter.class);
