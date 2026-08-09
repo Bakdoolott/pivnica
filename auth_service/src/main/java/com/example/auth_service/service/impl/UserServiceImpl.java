@@ -2,7 +2,6 @@ package com.example.auth_service.service.impl;
 
 import com.example.auth_service.entity.enums.RoleEnums;
 import com.example.auth_service.entity.model.UserEntity;
-import com.example.auth_service.exception.IllegalRoleOperationException;
 import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.security.UserDetailsImpl;
 import com.example.auth_service.service.UserService;
@@ -13,7 +12,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Service
@@ -61,35 +59,6 @@ public class UserServiceImpl implements UserService {
         existing.setFirstName(entity.getFirstName());
         existing.setLastName(entity.getLastName());
         existing.setEmail(entity.getEmail());
-        return userRepository.save(existing);
-    }
-
-    @Override
-    @Transactional
-    public UserEntity updateRoles(Set<RoleEnums> roleEnums, Long id) {
-        UserEntity existing = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-        existing.getRoles().addAll(roleEnums);
-        return userRepository.save(existing);
-    }
-
-    @Override
-    @Transactional
-    public UserEntity removeRoles(Set<RoleEnums> roleEnums, Long id) {
-        UserEntity existing = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-
-        if (roleEnums.contains(RoleEnums.OWNER) && userRepository.countByRole(RoleEnums.OWNER) <= 1) {
-            throw new IllegalRoleOperationException("Нельзя снять роль OWNER у последнего владельца системы");
-        }
-
-        Set<RoleEnums> remaining = new HashSet<>(existing.getRoles());
-        remaining.removeAll(roleEnums);
-        if (remaining.isEmpty()) {
-            throw new IllegalRoleOperationException("У пользователя должна остаться хотя бы одна роль");
-        }
-
-        existing.getRoles().removeAll(roleEnums);
         return userRepository.save(existing);
     }
 
