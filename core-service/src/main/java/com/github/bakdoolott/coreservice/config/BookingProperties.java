@@ -27,7 +27,7 @@ public class BookingProperties {
     LocalTime openTime = LocalTime.of(18, 0);
 
     @NotNull
-    LocalTime closingTime = LocalTime.of(6,0);
+    LocalTime closingTime = LocalTime.of(4,0);
 
     @Min(0) @Max(1440)
     int minLeadMinutes = 30;

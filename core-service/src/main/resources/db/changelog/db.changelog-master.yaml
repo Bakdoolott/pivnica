@@ -17,3 +17,7 @@ databaseChangeLog:
       file: db/changelog/changes/008-create-booking-table-join.yaml
   - include:
       file: db/changelog/changes/009-add-price-id-to-booking.yaml
+  - include:
+      file: db/changelog/changes/010-drop-id-table-tb-from-booking.yaml
+  - include:
+      file: db/changelog/changes/011-add-cancel-fields-to-booking.yaml

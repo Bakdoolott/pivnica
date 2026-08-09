@@ -8,6 +8,7 @@ import com.github.bakdoolott.coreservice.mappers.BookingMapper;
 import com.github.bakdoolott.coreservice.models.Booking;
 import com.github.bakdoolott.coreservice.models.BookingPrice;
 import com.github.bakdoolott.coreservice.models.Tables;
+import com.github.bakdoolott.coreservice.models.dto.BookingCancelDto;
 import com.github.bakdoolott.coreservice.models.dto.BookingCreateDto;
 import com.github.bakdoolott.coreservice.models.dto.response.BookingResponse;
 import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
@@ -21,9 +22,14 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -110,6 +116,65 @@ public class BookingServiceImpl implements BookingService {
         return bookingMapper.toResponse(saved);
     }
 
+    @Override
+    @Transactional
+    public BookingResponse cancelBooking(Long adminId, Long bookingId, BookingCancelDto dto) {
+        Booking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> new NotFoundException("Бронь с ID: " + bookingId + " не найдена"));
+
+        if(booking.getBookingStatus() == BookingStatus.CANCELLED){
+            throw new ConflictException("Бронь с ID: " + bookingId + " уже отменена");
+        }
+        LocalDateTime now = LocalDateTime.now(bookingProperties.getClubZone());
+        if (booking.getEndsAt().isBefore(now)){
+            throw new LogicException("Нельзя отменить прошедшую бронь");
+        }
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        booking.setEnable(false);
+        booking.setCancelReason(dto.reason().trim());
+        booking.setCancelledAt(now);
+        booking.setCancelledBy(adminId);
+
+        return bookingMapper.toResponse(bookingRepo.save(booking));
+    }
+
+    @Override
+    public byte[] exportBookingsForNight(LocalDate date) {
+        LocalDateTime[] window = nightWindow(date);
+        List<Booking> bookings = bookingRepo.findAllForNight(window[0],window[1]);
+
+        StringBuilder csv = new StringBuilder("\uFEFF");
+        csv.append("Время;Столики;Гость;Телефон;Гостей;Сумма;Статус;Оплата;Комментарий\n");
+
+        DateTimeFormatter time = DateTimeFormatter.ofPattern("dd.MM HH:mm");
+        for (Booking b : bookings) {
+            String tables = b.getTables().stream()
+                    .map(Tables::getTableNumber)
+                    .sorted()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(", "));
+
+            csv.append(b.getDateTime().format(time)).append(';')
+                    .append(csvCell(tables)).append(';')
+                    .append(csvCell(b.getUserName())).append(';')
+                    .append(csvCell(b.getPhoneNumber())).append(';')
+                    .append(b.getGuestCount()).append(';')
+                    .append(totalAmount(b)).append(';')
+                    .append(b.getBookingStatus()).append(';')
+                    .append(b.getPaymentStatus()).append(';')
+                    .append(csvCell(b.getComment())).append('\n');
+        }
+        return csv.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getBookingsForNight(LocalDate date) {
+        LocalDateTime[] window = nightWindow(date);
+        return bookingRepo.findAllForNight(window[0], window[1]).stream()
+                .map(bookingMapper::toResponse)
+                .toList();
+    }
     private void validateArrivalTime(LocalDateTime arrivalAt, LocalDateTime dayStart, LocalDateTime dayEnd) {
         if (arrivalAt.isBefore(dayStart) || !arrivalAt.isBefore(dayEnd)) {
             throw new LogicException("Время прихода должно быть в рабочие часы клуба");
@@ -152,6 +217,23 @@ public class BookingServiceImpl implements BookingService {
         }
         String normalized = comment.trim();
         return normalized.isBlank() ? null : normalized;
+    }
+    private LocalDateTime[] nightWindow(LocalDate date) {
+        LocalDateTime from = date.atTime(bookingProperties.getOpenTime());
+        LocalDateTime to = bookingProperties.isOvernight()
+                ? date.plusDays(1).atTime(bookingProperties.getClosingTime())
+                : date.atTime(bookingProperties.getClosingTime());
+        return new LocalDateTime[]{from, to};
+    }
+    private String csvCell(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        String cleaned = value.replace("\"", "\"\"").replaceAll("[\\r\\n]+", " ");
+        return "\"" + cleaned + "\"";
+    }
+    private BigDecimal totalAmount(Booking booking) {
+        return booking.getPrice().getPrice().setScale(2, RoundingMode.HALF_UP);
     }
 
 }

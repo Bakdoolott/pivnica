@@ -16,6 +16,7 @@ import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = BookingPriceMapper.class,unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface BookingMapper {
+    @Mapping(target = "totalAmount", source = "price.price")
     @Mapping(target = "tables", source = "tables")
     @Mapping(target = "price", source = "price")
     BookingResponse toResponse(Booking booking);

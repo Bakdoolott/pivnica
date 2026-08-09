@@ -76,6 +76,15 @@ public class Booking {
     @JoinColumn(name = "price_id", nullable = false)
     BookingPrice price;
 
+    @Column(name = "cancel_reason", length = 300)
+    String cancelReason;
+
+    @Column(name = "cancelled_at")
+    LocalDateTime cancelledAt;
+
+    @Column(name = "cancelled_by")
+    Long cancelledBy;
+
     @Column(nullable = false)
     boolean enable = true;
 

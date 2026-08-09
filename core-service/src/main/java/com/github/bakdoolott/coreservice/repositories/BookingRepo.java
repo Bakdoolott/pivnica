@@ -25,4 +25,17 @@ public interface BookingRepo extends JpaRepository<Booking,Long> {
                                      @Param("from") LocalDateTime from,
                                      @Param("to") LocalDateTime to,
                                      @Param("confirmed") BookingStatus confirmed);
+
+    @Query("""
+        select distinct b from Booking b
+        left join fetch b.tables t
+        join fetch b.price
+        where b.enable = true
+          and b.bookingStatus = com.github.bakdoolott.coreservice.models.enums.BookingStatus.CONFIRMED
+          and b.dateTime < :to
+          and b.endsAt > :from
+        order by b.dateTime asc, b.id asc
+        """)
+    List<Booking> findAllForNight(@Param("from") LocalDateTime from,
+                                  @Param("to") LocalDateTime to);
 }
