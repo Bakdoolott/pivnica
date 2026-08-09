@@ -36,16 +36,17 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         //AuthContoller
                         .requestMatchers(HttpMethod.POST,
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/mobile/verify-code",
-                                "/api/v1/auth/web/verify-code",
-                                "/api/v1/auth/mob/refresh",
-                                "/api/v1/auth/web/refresh"
+                                "/api/v1/auth/auth/login",
+                                "/api/v1/auth/auth/mobile/verify-code",
+                                "/api/v1/auth/auth/web/verify-code",
+                                "/api/v1/auth/auth/mob/refresh",
+                                "/api/v1/auth/auth/web/refresh"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST,
-                                "/api/v1/auth/mobile/logout",
-                                "/api/v1/auth/web/logout"
+                                "/api/v1/auth/auth/mobile/logout",
+                                "/api/v1/auth/auth/web/logout"
                         ).authenticated()
+
                         //UserController
                         .requestMatchers(HttpMethod.PUT,
                                 "/api/v1/auth/users/update-user-roles/{id}",
