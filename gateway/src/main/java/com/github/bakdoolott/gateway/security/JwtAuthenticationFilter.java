@@ -96,21 +96,24 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private static final java.util.Set<String> PUBLIC_EXACT_PATHS = java.util.Set.of(
-            "/api/v1/auth/login",
-            "/api/v1/auth/mobile/verify-code",
-            "/api/v1/auth/web/verify-code",
-            "/api/v1/auth/mob/refresh",
-            "/api/v1/auth/web/refresh",
+            "/auth/api/v1/auth/login",
+            "/auth/api/v1/auth/mobile/verify-code",
+            "/auth/api/v1/auth/web/verify-code",
+            "/auth/api/v1/auth/mob/refresh",
+            "/auth/api/v1/auth/web/refresh",
             "/swagger-ui.html",
             "/swagger-ui/index.html"
     );
 
     private boolean isPublicPath(String path) {
-        return PUBLIC_EXACT_PATHS.contains(path)
+        String normalizedPath = path.startsWith("/docs") ? path.substring(5) : path;
+
+        return PUBLIC_EXACT_PATHS.contains(normalizedPath)
+                || PUBLIC_EXACT_PATHS.contains(path)
                 || path.startsWith("/swagger-ui/")
                 || path.startsWith("/webjars/swagger-ui/")
                 || path.startsWith("/v3/api-docs/")
-                || path.matches("/docs/.*/v3/api-docs.*");
+                || path.startsWith("/docs/");
     }
 
     @Override

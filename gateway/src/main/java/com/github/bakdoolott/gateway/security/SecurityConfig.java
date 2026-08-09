@@ -48,6 +48,16 @@ public class SecurityConfig {
                 .addFilterAt(jwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(
+                                // Варианты с префиксом /auth
+                                "/auth/api/v1/auth/login",
+                                "/auth/api/v1/auth/mobile/verify-code",
+                                "/auth/api/v1/auth/web/verify-code",
+                                "/auth/api/v1/auth/mob/refresh",
+                                "/auth/api/v1/auth/web/refresh",
+                                "/auth/api/v1/auth/mobile/logout",
+                                "/auth/api/v1/auth/web/logout",
+
+                                // Старые варианты без префикса
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/mobile/verify-code",
                                 "/api/v1/auth/web/verify-code",
@@ -55,6 +65,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/web/refresh",
                                 "/api/v1/auth/mobile/logout",
                                 "/api/v1/auth/web/logout",
+
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/webjars/swagger-ui/**",
@@ -152,21 +163,21 @@ public class SecurityConfig {
     }
 
     private static final java.util.Set<String> PUBLIC_EXACT_PATHS = java.util.Set.of(
-            "/api/v1/auth/login",
-            "/api/v1/auth/mobile/verify-code",
-            "/api/v1/auth/web/verify-code",
-            "/api/v1/auth/mob/refresh",
-            "/api/v1/auth/web/refresh",
-            "/api/v1/auth/mobile/logout",
-            "/api/v1/auth/web/logout",
+            "/auth/api/v1/auth/login",
+            "/auth/api/v1/auth/mobile/verify-code",
+            "/auth/api/v1/auth/web/verify-code",
+            "/auth/api/v1/auth/mob/refresh",
+            "/auth/api/v1/auth/web/refresh",
+            "/auth/api/v1/auth/mobile/logout",
+            "/auth/api/v1/auth/web/logout",
             "/swagger-ui.html"
     );
 
     private boolean isPublicPath(String path) {
         return PUBLIC_EXACT_PATHS.contains(path)
-                || path.startsWith("/swagger-ui/")
-                || path.startsWith("/webjars/swagger-ui/")
-                || path.startsWith("/v3/api-docs/")
-                || path.startsWith("/docs/");
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/webjars/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/docs");
     }
 }
