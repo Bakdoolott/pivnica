@@ -1,4 +1,4 @@
 telegram:
   bot:
     bot-username: ${BOT_USERNAME:TgBerHelperBot}
-    bot-token: ${BOT_TOKEN}
+    bot-token: ${BOT_TOKEN:8797257176:AAF1ZVrD-d15mARzqQ3RsSlI4oo2iSeDpvg}

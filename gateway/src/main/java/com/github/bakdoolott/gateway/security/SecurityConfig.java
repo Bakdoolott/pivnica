@@ -48,7 +48,13 @@ public class SecurityConfig {
                 .addFilterAt(jwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(
-                                "/api/v1/auth/**",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/mobile/verify-code",
+                                "/api/v1/auth/web/verify-code",
+                                "/api/v1/auth/mob/refresh",
+                                "/api/v1/auth/web/refresh",
+                                "/api/v1/auth/mobile/logout",
+                                "/api/v1/auth/web/logout",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/webjars/swagger-ui/**",
@@ -145,9 +151,19 @@ public class SecurityConfig {
         return new SimpleGrantedAuthority("ROLE_" + role);
     }
 
+    private static final java.util.Set<String> PUBLIC_EXACT_PATHS = java.util.Set.of(
+            "/api/v1/auth/login",
+            "/api/v1/auth/mobile/verify-code",
+            "/api/v1/auth/web/verify-code",
+            "/api/v1/auth/mob/refresh",
+            "/api/v1/auth/web/refresh",
+            "/api/v1/auth/mobile/logout",
+            "/api/v1/auth/web/logout",
+            "/swagger-ui.html"
+    );
+
     private boolean isPublicPath(String path) {
-        return path.startsWith("/api/v1/auth/")
-                || path.equals("/swagger-ui.html")
+        return PUBLIC_EXACT_PATHS.contains(path)
                 || path.startsWith("/swagger-ui/")
                 || path.startsWith("/webjars/swagger-ui/")
                 || path.startsWith("/v3/api-docs/")
