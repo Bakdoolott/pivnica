@@ -1,8 +1,8 @@
 package com.github.bakdoolott.coreservice.models.enums;
 
-public enum PaymentStatus {
+public enum BookingStatus {
     PENDING,
-    PAID,
-    FAILED,
-    REFUNDED
+    CONFIRMED,
+    CANCELLED,
+    EXPIRED
 }
