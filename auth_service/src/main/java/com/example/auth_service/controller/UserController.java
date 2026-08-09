@@ -6,14 +6,17 @@ import com.example.auth_service.dto.response.UserResponse;
 import com.example.auth_service.entity.model.UserEntity;import com.example.auth_service.mapper.UserMapper;
 import com.example.auth_service.service.AuthService;
 import com.example.auth_service.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/auth/users")
 public class UserController {
 
     private final UserService service;
