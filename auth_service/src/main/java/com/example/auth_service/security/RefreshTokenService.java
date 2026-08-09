@@ -2,6 +2,8 @@ package com.example.auth_service.security;
 import com.example.auth_service.entity.model.RefreshTokenEntity;
 import com.example.auth_service.entity.model.UserEntity;
 import com.example.auth_service.repository.RefreshTokenRepository;
+import com.example.auth_service.service.AuthService;
+import jakarta.ws.rs.NotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,22 +22,32 @@ public class RefreshTokenService {
     private long refreshTimeMs;
 
     private final RefreshTokenRepository refreshTokenRepository;
-    private final SecureRandom random = new SecureRandom();
+    private final SecureRandom random;
 
     public RefreshTokenService(RefreshTokenRepository refreshTokenRepository) {
         this.refreshTokenRepository = refreshTokenRepository;
+        this.random = new SecureRandom();
     }
 
     @Transactional
     public String issue(UserEntity user) {
         String rawToken = generateValue();
 
-        refreshTokenRepository.save(RefreshTokenEntity.builder()
+        RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByUser(user)
+                .orElse(null);
+        if(refreshTokenEntity == null){
+            refreshTokenRepository.save(RefreshTokenEntity.builder()
                 .user(user)
                 .tokenHash(hash(rawToken))
                 .expiresAt(Instant.now().plusMillis(refreshTimeMs))
                 .revoked(false)
                 .build());
+        }else {
+            refreshTokenEntity.setTokenHash(hash(rawToken));
+            refreshTokenEntity.setExpiresAt(Instant.now().plusMillis(refreshTimeMs));
+            refreshTokenEntity.setRevoked(false);
+            refreshTokenRepository.save(refreshTokenEntity);
+        }
 
         return rawToken;
     }

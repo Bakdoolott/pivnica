@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .addFilterAt(jwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(
-                                "/api/v1/auth/**",
+                                "/api/v1/auth/auth/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/webjars/swagger-ui/**",
@@ -146,7 +146,7 @@ public class SecurityConfig {
     }
 
     private boolean isPublicPath(String path) {
-        return path.startsWith("/api/v1/auth/")
+        return path.startsWith("/api/v1/auth/auth/")
                 || path.equals("/swagger-ui.html")
                 || path.startsWith("/swagger-ui/")
                 || path.startsWith("/webjars/swagger-ui/")
