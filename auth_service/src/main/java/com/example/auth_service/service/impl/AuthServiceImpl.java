@@ -103,11 +103,11 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Код истёк, запросите новый");
         }
 
-//        if (active.getAttempts() >= MAX_ATTEMPTS) {
-//            active.setEnable(false);
-//            temporaryCodeRepository.save(active);
-//            throw new RuntimeException("Превышено число попыток, запросите новый код");
-//        }
+        if (active.getAttempts() >= MAX_ATTEMPTS) {
+            active.setEnable(false);
+            temporaryCodeRepository.save(active);
+            throw new RuntimeException("Превышено число попыток, запросите новый код");
+        }
 
         if (!active.getCode().equals(code)) {
             active.setAttempts(active.getAttempts() + 1);
