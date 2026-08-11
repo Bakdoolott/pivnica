@@ -12,7 +12,6 @@ import com.example.auth_service.service.AuthService;
 import com.example.auth_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -145,11 +144,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserEntity getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String phoneNumber = principal instanceof UserDetails
-                ? ((UserDetails) principal).getUsername() : principal.toString();
-
-        return userService.findByPhoneNumber(phoneNumber);
+        // Принципал кладёт JwtHeaderAuthenticationFilter: это UserDetailsImpl,
+        // собранный из свежих данных БД по X-User-Id. Берём id и перечитываем сущность.
+        UserDetailsImpl principal = (UserDetailsImpl)
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userService.findById(principal.getId());
     }
 
     private TokenResponse issueTokenPair(UserEntity user) {
