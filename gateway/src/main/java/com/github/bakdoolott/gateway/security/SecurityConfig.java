@@ -4,6 +4,7 @@ import com.github.bakdoolott.gateway.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -95,15 +96,23 @@ public class SecurityConfig {
         return exchange -> {
             String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            String token = null;
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            } else {
+                HttpCookie cookie = exchange.getRequest().getCookies().getFirst("access_token");
+                if (cookie != null) {
+                    token = cookie.getValue();
+                }
+            }
+
+            if (token == null) {
                 return Mono.empty();
             }
 
-            String token = authHeader.substring(7);
             return Mono.just(new UsernamePasswordAuthenticationToken(null, token));
         };
     }
-
     private String extractPrincipal(Claims claims) {
         Object userId = claims.get("userId");
 

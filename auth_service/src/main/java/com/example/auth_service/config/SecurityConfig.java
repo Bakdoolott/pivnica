@@ -3,6 +3,7 @@ package com.example.auth_service.config;
 import com.example.auth_service.security.JwtCore;
 import com.example.auth_service.security.TokenFilter;
 import com.example.auth_service.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,6 +31,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
                 .sessionManagement(sm ->
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -39,7 +43,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/auth/login",
                                 "/api/v1/auth/auth/mobile/verify-code",
                                 "/api/v1/auth/auth/web/verify-code",
-                                "/api/v1/auth/auth/mob/refresh",
+                                "/api/v1/auth/auth/mobile/refresh",
                                 "/api/v1/auth/auth/web/refresh"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST,

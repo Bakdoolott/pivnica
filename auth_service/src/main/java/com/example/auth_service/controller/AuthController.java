@@ -88,7 +88,6 @@ public class AuthController {
     @PostMapping("/web/refresh")
     public ResponseEntity<Void> webRefresh(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-
         String refreshToken = cookies == null ? null :
                 Arrays.stream(cookies)
                         .filter(cookie -> "refresh_token".equals(cookie.getName()))
@@ -96,14 +95,20 @@ public class AuthController {
                         .findFirst()
                         .orElseThrow(() -> new RuntimeException("Refresh token not found"));
 
-        ResponseCookie accessCookie = ResponseCookie.from("access_token", authService.refresh(refreshToken).accessToken())
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
-                .path("/")
+        TokenResponse token = authService.refresh(refreshToken);
+
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", token.accessToken())
+                .httpOnly(true).secure(false).sameSite("Lax").path("/")
                 .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", token.refreshToken())
+                .httpOnly(true).secure(false).sameSite("Strict").path("/")
+                .maxAge(Duration.ofHours(12))
+                .build();
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .build();
     }
 
