@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-add-missing-booking-columns
+      author: Viktor
+      changes:
+        - addColumn:
+            tableName: book_tb
+            columns:
+              - column:
+                  name: guest_count
+                  type: INT
+                  constraints:
+                    nullable: false
+                    defaultValueNumeric: 1
+              - column:
+                  name: comment
+                  type: VARCHAR(500)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueDate: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+        - addNotNullConstraint:
+            tableName: book_tb
+            columnName: ends_at
+            constraintName: notnull_ends_at
+            columnDataType: TIMESTAMP
+
+        - createIndex:
+            tableName: book_tb
+            indexName: idx_booking_interval
+            columns:
+              - column:
+                  name: id_table_tb
+              - column:
+                  name: date_time
+              - column:
+                  name: ends_at
+              - column:
+                  name: booking_status
+              - column:
+                  name: enable

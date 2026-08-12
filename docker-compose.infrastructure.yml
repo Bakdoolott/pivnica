@@ -81,7 +81,7 @@ services:
       - DB_NAME=auth_db
       - DB_USERNAME=auth_user
       - DB_PASSWORD=auth_strong_pass_123
-      - BOT_TOKEN=8903686061:AAFPZxPmwa2EuITkdh3ecMg7qEG-MhXy-08
+      - BOT_TOKEN=8625864637:AAEtNeyvcK-umEwmkADj1rlZtOgoid2nVB8
     depends_on:
       - postgres
     networks:
