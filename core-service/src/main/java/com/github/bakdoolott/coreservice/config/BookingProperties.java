@@ -1,5 +1,6 @@
 package com.github.bakdoolott.coreservice.config;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -43,4 +44,19 @@ public class BookingProperties {
     }
     @NotNull
     ZoneId clubZone = ZoneId.of("Asia/Bishkek");
+
+    @Min(0) @Max(168)
+    int cancelCutoffHours = 6;
+
+    @Min(0) @Max(720)
+    int refundFullBeforeHours = 24;
+
+    @Min(0) @Max(100)
+    int refundPartialPercent = 50;
+
+    @AssertTrue(message = "refundFullBeforeHours должен быть не меньше cancelCutoffHours")
+    public boolean isRefundWindowValid() {
+        return refundFullBeforeHours >= cancelCutoffHours;
+    }
+
 }

@@ -10,6 +10,7 @@ import com.github.bakdoolott.coreservice.models.BookingPrice;
 import com.github.bakdoolott.coreservice.models.Tables;
 import com.github.bakdoolott.coreservice.models.dto.BookingCancelDto;
 import com.github.bakdoolott.coreservice.models.dto.BookingCreateDto;
+import com.github.bakdoolott.coreservice.models.dto.response.BookingCancelResponse;
 import com.github.bakdoolott.coreservice.models.dto.response.BookingResponse;
 import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
 import com.github.bakdoolott.coreservice.models.enums.PaymentStatus;
@@ -18,6 +19,9 @@ import com.github.bakdoolott.coreservice.repositories.BookingRepo;
 import com.github.bakdoolott.coreservice.repositories.TableRepo;
 import com.github.bakdoolott.coreservice.services.BookingPriceService;
 import com.github.bakdoolott.coreservice.services.BookingService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.springframework.context.MessageSource;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,12 +133,7 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getEndsAt().isBefore(now)){
             throw new LogicException("Нельзя отменить прошедшую бронь");
         }
-        booking.setBookingStatus(BookingStatus.CANCELLED);
-        booking.setEnable(false);
-        booking.setCancelReason(dto.reason().trim());
-        booking.setCancelledAt(now);
-        booking.setCancelledBy(adminId);
-
+        applyCancellation(booking,adminId,dto.reason(),now);
         return bookingMapper.toResponse(bookingRepo.save(booking));
     }
 
@@ -169,17 +168,91 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
+    public BookingCancelResponse getCancelResponse(Long userId, Long bookingId) {
+        Booking booking = findOwnOrThrow(userId,bookingId);
+        return buildCancelResponse(booking,LocalDateTime.now(bookingProperties.getClubZone()));
+    }
+
+    @Override
+    @Transactional
+    public BookingResponse cancelOwnBooking(Long userId, Long bookingId, String reason) {
+        Booking booking = findOwnOrThrow(userId,bookingId);
+        LocalDateTime now = LocalDateTime.now(bookingProperties.getClubZone());
+
+        if(booking.getBookingStatus() == BookingStatus.CANCELLED){
+            throw new ConflictException("Бронь уже отменена");
+        }
+        if (booking.getBookingStatus() != BookingStatus.CONFIRMED) {
+            throw new LogicException("Отменить можно только подтвержденную бронь");
+        }
+        BookingCancelResponse response = buildCancelResponse(booking,now);
+        if(!response.cancellable()){
+            throw new LogicException(response.message());
+        }
+        applyCancellation(booking,userId,reason,now);
+        Booking saved = bookingRepo.save(booking);
+
+        return bookingMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<BookingResponse> getBookingsForNight(LocalDate date) {
         LocalDateTime[] window = nightWindow(date);
         return bookingRepo.findAllForNight(window[0], window[1]).stream()
                 .map(bookingMapper::toResponse)
                 .toList();
     }
+    private BookingCancelResponse buildCancelResponse(Booking booking, LocalDateTime now) {
+        BigDecimal total = booking.getPrice().getPrice().setScale(2,RoundingMode.HALF_UP);
+        BigDecimal zero = BigDecimal.ZERO.setScale(2,RoundingMode.HALF_UP);
+        LocalDateTime deadline = booking.getDateTime().minusHours(bookingProperties.getCancelCutoffHours());
+
+        if(booking.getBookingStatus() == BookingStatus.CANCELLED){
+            return new BookingCancelResponse(booking.getId(), false,deadline,total,zero,0, "Бронь уже отменена");
+        }
+        if(booking.getEndsAt().isBefore(now)){
+            return new BookingCancelResponse(booking.getId(), false,deadline,total,zero,0,"Бронь уже прошла");
+        }
+        if(booking.getDateTime().isBefore(now)){
+            return new BookingCancelResponse(booking.getId(), false,deadline,total,zero,0,"Бронь уже началась");
+        }
+        if(!now.isBefore(deadline)){
+            return new BookingCancelResponse(booking.getId(),false,deadline,total,zero,0,"Отменить бронь можно не позднее чем за "
+                    + bookingProperties.getCancelCutoffHours() + " часов");
+        }
+        Duration timeLeft = Duration.between(now,booking.getDateTime());
+        int percent;
+        if(timeLeft.compareTo(Duration.ofHours(bookingProperties.getRefundFullBeforeHours())) >= 0) {
+            percent = 100;
+        }else {
+            percent = bookingProperties.getRefundPartialPercent();
+        }
+        BigDecimal refund = total.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100),2,RoundingMode.HALF_UP);
+        String message = switch (percent){
+            case 100 -> "Предоплата будет возвращена полностью: " + refund;
+            case 0 -> "До брони осталось меньше " + bookingProperties.getRefundFullBeforeHours() + " часов,предоплата не возвращается";
+            default -> "Возврат составит " + percent + "% предоплаты " + refund + " из " + total;
+        };
+
+        return new BookingCancelResponse(booking.getId(), true,deadline,total,refund,percent, message);
+
+    }
+
     private void validateArrivalTime(LocalDateTime arrivalAt, LocalDateTime dayStart, LocalDateTime dayEnd) {
         if (arrivalAt.isBefore(dayStart) || !arrivalAt.isBefore(dayEnd)) {
             throw new LogicException("Время прихода должно быть в рабочие часы клуба");
         }
     }
+
+    private void applyCancellation(Booking booking, Long id, String reason, LocalDateTime now) {
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        booking.setEnable(false);
+        booking.setCancelReason(reason == null || reason.isBlank() ? null : reason.trim());
+        booking.setCancelledAt(now);
+        booking.setCancelledBy(id);
+    }
+
 
     private void validateSchedule(LocalDateTime arrivalAt, LocalDateTime now) {
         LocalDate bookingDate = arrivalAt.toLocalDate();
@@ -234,6 +307,15 @@ public class BookingServiceImpl implements BookingService {
     }
     private BigDecimal totalAmount(Booking booking) {
         return booking.getPrice().getPrice().setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private Booking findOwnOrThrow(Long userId, Long bookingId) {
+        if (userId == null) {
+            throw new NotFoundException("Пользователь не авторизован");
+        }
+
+        return bookingRepo.findOwnById(bookingId,userId).orElseThrow(() ->
+                new NotFoundException("Бронь с ID " + bookingId + " не найдена"));
     }
 
 }

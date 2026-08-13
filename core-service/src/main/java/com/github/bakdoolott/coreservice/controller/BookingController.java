@@ -2,12 +2,14 @@ package com.github.bakdoolott.coreservice.controller;
 
 import com.github.bakdoolott.coreservice.models.dto.BookingCancelDto;
 import com.github.bakdoolott.coreservice.models.dto.BookingCreateDto;
+import com.github.bakdoolott.coreservice.models.dto.response.BookingCancelResponse;
 import com.github.bakdoolott.coreservice.models.dto.response.BookingResponse;
 import com.github.bakdoolott.coreservice.security.AuthenticatedUserResolver;
 import com.github.bakdoolott.coreservice.services.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -73,5 +75,26 @@ public class BookingController {
                         "attachment; filename=\"bookings-" + date + ".csv\"")
                 .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
                 .body(body);
+    }
+    @GetMapping("/{id}/cancellation")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Условия отмены брони",
+            description = "Показывает можно ли отменить")
+    public ResponseEntity<BookingCancelResponse> cancellationPolicy(
+            Authentication authentication,
+            @PathVariable Long id) {
+        Long userId = userResolver.getUserId(authentication);
+        return ResponseEntity.ok(bookingService.getCancelResponse(userId, id));
+    }
+
+    @PostMapping("/{id}/cancel-guest")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Отмена своей брони")
+    public ResponseEntity<BookingResponse> cancelOwn(
+            Authentication authentication,
+            @PathVariable Long id,
+            @RequestParam(required = false) @Size(max = 300) String reason) {
+        Long userId = userResolver.getUserId(authentication);
+        return ResponseEntity.ok(bookingService.cancelOwnBooking(userId, id, reason));
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepo extends JpaRepository<Booking,Long> {
@@ -38,4 +39,13 @@ public interface BookingRepo extends JpaRepository<Booking,Long> {
         """)
     List<Booking> findAllForNight(@Param("from") LocalDateTime from,
                                   @Param("to") LocalDateTime to);
+
+    @Query("""
+            select b from Booking b
+            left join fetch b.tables
+            join fetch b.price
+            where b.id = :id
+              and b.userId = :userId
+            """)
+    Optional<Booking> findOwnById(@Param("id") Long id, @Param("userId") Long userId);
 }
