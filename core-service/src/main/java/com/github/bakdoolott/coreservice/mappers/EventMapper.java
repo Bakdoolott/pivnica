@@ -1,8 +1,8 @@
-package com.github.bakdoolott.coreservice.mapper;
+package com.github.bakdoolott.coreservice.mappers;
 
-import com.github.bakdoolott.coreservice.dto.EventAdminDTO;
-import com.github.bakdoolott.coreservice.dto.EventBannerDTO;
-import com.github.bakdoolott.coreservice.dto.EventCreateRequest;
+import com.github.bakdoolott.coreservice.models.dto.response.EventResponse;
+import com.github.bakdoolott.coreservice.models.dto.response.EventBannerDTO;
+import com.github.bakdoolott.coreservice.models.dto.request.EventCreateRequest;
 import com.github.bakdoolott.coreservice.models.Event;
 import com.github.bakdoolott.coreservice.models.enums.EventStatus;
 import org.springframework.stereotype.Component;
@@ -21,8 +21,8 @@ public class EventMapper {
                 .endsAt(event.getEndsAt())
                 .build();
     }
-    public EventAdminDTO toAdminDTO(Event event){
-        return EventAdminDTO.builder()
+    public EventResponse toResponse(Event event){
+        return EventResponse.builder()
                 .id(event.getId())
                 .title(event.getTitle())
                 .description(event.getDescription())

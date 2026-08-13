@@ -1,64 +1,81 @@
 package com.github.bakdoolott.coreservice.controller;
 
-import com.github.bakdoolott.coreservice.dto.EventAdminDTO;
-import com.github.bakdoolott.coreservice.dto.EventBannerDTO;
-import com.github.bakdoolott.coreservice.dto.EventCreateRequest;
-import com.github.bakdoolott.coreservice.models.Event;
-import com.github.bakdoolott.coreservice.service.EventService;
-import com.github.bakdoolott.coreservice.service.impl.EventServiceImpl;
+import com.github.bakdoolott.coreservice.models.dto.response.EventResponse;
+import com.github.bakdoolott.coreservice.models.dto.response.EventBannerDTO;
+import com.github.bakdoolott.coreservice.models.dto.request.EventCreateRequest;
+import com.github.bakdoolott.coreservice.services.EventService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping("api/v1/core/event")
+@Tag(name = "мероприятия")
 public class EventController {
     private final EventService eventService;
     @Autowired
     public EventController(EventService eventService){
         this.eventService = eventService;
     }
+
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/banner")
+    @Operation(summary = "получение баннеров мероприятий",
+    description = "находит баннеры с незаконченными мероприятиями")
     public List<EventBannerDTO> getActiveBanners(){
         List<EventBannerDTO> banner = eventService.getActiveBanners();
         return banner;
     }
     @GetMapping("/admin")
-    public List<EventAdminDTO> getAllEvents(){
-        List<EventAdminDTO> events = eventService.getAllForAdmin();
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
+    @Operation(summary = "получение всех баннеров")
+    public List<EventResponse> getAllEvents(){
+        List<EventResponse> events = eventService.getAllForAdmin();
         return events;
     }
     @PostMapping("/admin")
-    public ResponseEntity<EventAdminDTO> createEvent(@Valid @RequestBody EventCreateRequest request){
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
+    @Operation(summary = "создание мероприятия")
+    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreateRequest request){
         String createdBy = SecurityContextHolder.getContext().getAuthentication().getName();
-        EventAdminDTO saved = eventService.createEvent(request, createdBy);
+        EventResponse saved = eventService.createEvent(request, createdBy);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
     @PatchMapping("/admin/{id}")
-    public ResponseEntity<EventAdminDTO> updateEvent(@PathVariable Long id,@RequestBody EventCreateRequest request){
-        EventAdminDTO saved = eventService.updateEvent(id, request);
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
+    @Operation(summary = "редактирование мероприятия",
+    description = "обновляет отдельные поля")
+    public ResponseEntity<EventResponse> updateEvent(@PathVariable Long id, @Valid @RequestBody EventCreateRequest request){
+        EventResponse saved = eventService.updateEvent(id, request);
         return ResponseEntity.ok().body(saved);
     }
     @PatchMapping("/admin/{id}/disable")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
+    @Operation(summary = "удаление мероприятия")
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id){
        eventService.deleteEvent(id);
        return ResponseEntity.noContent().build();
     }
     @GetMapping("/admin/{id}/publish")
-    public ResponseEntity<EventAdminDTO> publishEvent(@PathVariable Long id){
-        EventAdminDTO event = eventService.publishEvent(id);
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
+    @Operation(summary = "публикация мероприятия в афишу")
+    public ResponseEntity<EventResponse> publishEvent(@PathVariable Long id){
+        EventResponse event = eventService.publishEvent(id);
         return ResponseEntity.ok(event);
     }
     @GetMapping("/admin/{id}/unpublish")
-    public ResponseEntity<EventAdminDTO> unpublishEvent(@PathVariable Long id){
-        EventAdminDTO event = eventService.unpublishEvent(id);
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
+    @Operation(summary = "удаление мероприятия из афиши")
+    public ResponseEntity<EventResponse> unpublishEvent(@PathVariable Long id){
+        EventResponse event = eventService.unpublishEvent(id);
         return ResponseEntity.ok(event);
     }
 

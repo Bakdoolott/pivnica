@@ -1,13 +1,14 @@
-package com.github.bakdoolott.coreservice.service.impl;
+package com.github.bakdoolott.coreservice.services.impl;
 
-import com.github.bakdoolott.coreservice.dto.EventAdminDTO;
-import com.github.bakdoolott.coreservice.dto.EventBannerDTO;
-import com.github.bakdoolott.coreservice.dto.EventCreateRequest;
+import com.github.bakdoolott.coreservice.models.dto.response.EventResponse;
+import com.github.bakdoolott.coreservice.models.dto.response.EventBannerDTO;
+import com.github.bakdoolott.coreservice.models.dto.request.EventCreateRequest;
 import com.github.bakdoolott.coreservice.models.enums.EventStatus;
-import com.github.bakdoolott.coreservice.service.EventService;
-import com.github.bakdoolott.coreservice.repository.EventRepository;
-import com.github.bakdoolott.coreservice.mapper.EventMapper;
-import com.github.bakdoolott.coreservice.service.exceptions.EventNotFoundException;
+import com.github.bakdoolott.coreservice.services.EventService;
+import com.github.bakdoolott.coreservice.repositories.EventRepository;
+import com.github.bakdoolott.coreservice.mappers.EventMapper;
+import com.github.bakdoolott.coreservice.exceptions.NotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import com.github.bakdoolott.coreservice.models.Event;
 
@@ -33,41 +34,46 @@ public class EventServiceImpl implements EventService{
                 .collect(Collectors.toList());
     }
     @Override
-    public List<EventAdminDTO> getAllForAdmin(){
+    public List<EventResponse> getAllForAdmin(){
         List<Event> events = eventRepository.findAll();
         return events.stream()
-                .map(event -> eventMapper.toAdminDTO(event))
+                .map(event -> eventMapper.toResponse(event))
                 .collect(Collectors.toList());
     }
     @Override
-    public EventAdminDTO createEvent(EventCreateRequest request, String createdBy){
+    @Transactional
+    public EventResponse createEvent(EventCreateRequest request, String createdBy){
         Event event = eventMapper.toEntity(request, createdBy);
         Event saved = eventRepository.save(event);
-        return eventMapper.toAdminDTO(saved);
+        return eventMapper.toResponse(saved);
     }
     @Override
-    public EventAdminDTO publishEvent(Long id) {
-        Event event = eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(id));
+    @Transactional
+    public EventResponse publishEvent(Long id) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Not Found Event " + id));
         event.setEventStatus(EventStatus.ENABLE);
         Event saved = eventRepository.save(event);
-        return eventMapper.toAdminDTO(saved);
+        return eventMapper.toResponse(saved);
     }
     @Override
-    public EventAdminDTO unpublishEvent(Long id){
-        Event event = eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(id));
+    @Transactional
+    public EventResponse unpublishEvent(Long id){
+        Event event = eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Not Found Event " + id));
         event.setEventStatus(EventStatus.UNAVAILABLE);
         Event saved = eventRepository.save(event);
-        return eventMapper.toAdminDTO(saved);
+        return eventMapper.toResponse(saved);
     }
     @Override
+    @Transactional
     public void deleteEvent(Long id){
-        Event event = eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(id));
+        Event event = eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Not Found Event " + id));
         event.setEnable(false);
         eventRepository.save(event);
     }
     @Override
-    public EventAdminDTO updateEvent(Long id, EventCreateRequest request){
-        Event event = eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(id));
+    @Transactional
+    public EventResponse updateEvent(Long id, EventCreateRequest request){
+        Event event = eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Not Found Event " + id));
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
         event.setEndsAt(request.getEndsAt());
@@ -75,6 +81,6 @@ public class EventServiceImpl implements EventService{
         event.setImageName(request.getImageName());
         event.setImageUrl(request.getImageUrl());
         Event saved = eventRepository.save(event);
-        return eventMapper.toAdminDTO(saved);
+        return eventMapper.toResponse(saved);
     }
 }

@@ -1,4 +1,4 @@
-package com.github.bakdoolott.coreservice.dto;
+package com.github.bakdoolott.coreservice.models.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -12,7 +12,9 @@ public class EventCreateRequest {
     @NotBlank
     private String title;
     private String description;
+    @NotBlank
     private String imageUrl;
+    @NotBlank
     private String imageName;
     @NotNull
     private LocalDateTime startsAt;

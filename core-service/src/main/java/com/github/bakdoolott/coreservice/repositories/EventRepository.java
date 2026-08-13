@@ -1,4 +1,4 @@
-package com.github.bakdoolott.coreservice.repository;
+package com.github.bakdoolott.coreservice.repositories;
 
 import com.github.bakdoolott.coreservice.models.Event;
 import com.github.bakdoolott.coreservice.models.enums.EventStatus;
