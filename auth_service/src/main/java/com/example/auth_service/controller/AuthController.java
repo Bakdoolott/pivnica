@@ -28,65 +28,17 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/mobile/verify-code")
-    public ResponseEntity<?> verifyMobileCode(@RequestBody VerifyCodeRequest request) {
-        return ResponseEntity.ok(authService.verify(request.phone(), request.code()));
-    }
-
-    @PostMapping("/web/verify-code")
-    public ResponseEntity<Void> verifyWebCode(@RequestBody VerifyCodeRequest request){
-        TokenResponse token = authService.verify(request.phone(), request.code());
-
-        ResponseCookie accessCookie = ResponseCookie.from("access_token", token.accessToken())
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
-                .path("/")
-                .build();
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", token.refreshToken())
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Strict")
-//                .path("/api/v1/auth/web") в prod нужно включить этот путь
-                .path("/")
-                .maxAge(Duration.ofHours(12))
-                .build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .build();
-    }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
         return ResponseEntity.ok(authService.login(UserEntity.builder().phoneNumber(loginRequest.phone()).build()));
     }
 
-    @PostMapping("/web/refresh")
-    public ResponseEntity<Void> webRefresh(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-
-        String refreshToken = cookies == null ? null :
-                Arrays.stream(cookies)
-                        .filter(cookie -> "refresh_token".equals(cookie.getName()))
-                        .map(Cookie::getValue)
-                        .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Refresh token not found"));
-
-        ResponseCookie accessCookie = ResponseCookie.from("access_token", authService.refresh(refreshToken).accessToken())
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
-                .path("/")
-                .build();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .build();
+    @PostMapping("/mobile/verify-code")
+    public ResponseEntity<?> verifyMobileCode(@RequestBody VerifyCodeRequest request) {
+        return ResponseEntity.ok(authService.verify(request.phone(), request.code()));
     }
 
-    @PostMapping("/mob/refresh")
+    @PostMapping("/mobile/refresh")
     public ResponseEntity<TokenResponse> mobileRefresh(@RequestBody RefreshRequest request){
         return new ResponseEntity<>(authService.refresh(request.refreshToken()), HttpStatus.OK);
     }
@@ -122,8 +74,9 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("Strict")
-                .path("/api/v1/auth/web")
-                .maxAge(Duration.ZERO)
+//                .path("/api/v1/auth/web") в prod нужно включить этот путь
+                .path("/")
+                .maxAge(Duration.ofHours(12))
                 .build();
 
         return ResponseEntity.ok()
@@ -131,4 +84,58 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .build();
     }
+
+    @PostMapping("/web/refresh")
+    public ResponseEntity<Void> webRefresh(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        String refreshToken = cookies == null ? null :
+                Arrays.stream(cookies)
+                        .filter(cookie -> "refresh_token".equals(cookie.getName()))
+                        .map(Cookie::getValue)
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+
+        TokenResponse token = authService.refresh(refreshToken);
+
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", token.accessToken())
+                .httpOnly(true).secure(false).sameSite("Lax").path("/")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", token.refreshToken())
+                .httpOnly(true).secure(false).sameSite("Strict").path("/")
+                .maxAge(Duration.ofHours(12))
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .build();
+    }
+
+
+    @PostMapping("/web/verify-code")
+    public ResponseEntity<Void> verifyWebCode(@RequestBody VerifyCodeRequest request){
+        TokenResponse token = authService.verify(request.phone(), request.code());
+
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", token.accessToken())
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", token.refreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(Duration.ofHours(12))
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .build();
+    }
+
 }
