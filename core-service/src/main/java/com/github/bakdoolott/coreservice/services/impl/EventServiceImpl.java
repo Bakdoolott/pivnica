@@ -26,13 +26,17 @@ public class EventServiceImpl implements EventService{
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
     }
+
     @Override
     public List<EventBannerDTO> getActiveBanners(){
-        List<Event> events = eventRepository.findByEnableTrueAndEventStatusAndEndsAtAfterOrderByStartsAtAsc(EventStatus.ENABLE, LocalDateTime.now());
+        List<Event> events = eventRepository.findByEnableTrueAndEventStatusAndEndsAtAfterOrderByStartsAtAsc(
+                EventStatus.ENABLE, LocalDateTime.now()
+        );
         return events.stream()
                 .map(event -> eventMapper.toBannerDTO(event))
                 .collect(Collectors.toList());
     }
+
     @Override
     public List<EventResponse> getAllForAdmin(){
         List<Event> events = eventRepository.findAll();
@@ -40,6 +44,7 @@ public class EventServiceImpl implements EventService{
                 .map(event -> eventMapper.toResponse(event))
                 .collect(Collectors.toList());
     }
+
     @Override
     @Transactional
     public EventResponse createEvent(EventCreateRequest request, String createdBy){
@@ -47,6 +52,7 @@ public class EventServiceImpl implements EventService{
         Event saved = eventRepository.save(event);
         return eventMapper.toResponse(saved);
     }
+
     @Override
     @Transactional
     public EventResponse publishEvent(Long id) {
@@ -55,6 +61,7 @@ public class EventServiceImpl implements EventService{
         Event saved = eventRepository.save(event);
         return eventMapper.toResponse(saved);
     }
+
     @Override
     @Transactional
     public EventResponse unpublishEvent(Long id){
@@ -63,6 +70,7 @@ public class EventServiceImpl implements EventService{
         Event saved = eventRepository.save(event);
         return eventMapper.toResponse(saved);
     }
+
     @Override
     @Transactional
     public void deleteEvent(Long id){
@@ -70,6 +78,7 @@ public class EventServiceImpl implements EventService{
         event.setEnable(false);
         eventRepository.save(event);
     }
+
     @Override
     @Transactional
     public EventResponse updateEvent(Long id, EventCreateRequest request){
