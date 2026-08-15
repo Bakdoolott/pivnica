@@ -1,34 +1,51 @@
 package com.github.bakdoolott.coreservice.repositories;
 
 import com.github.bakdoolott.coreservice.models.Booking;
+import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepo extends JpaRepository<Booking,Long> {
     @Query("""
-            SELECT DISTINCT t.id
-            FROM Booking b
-            JOIN b.tables t
-            WHERE t.hall.id = :hallId
-              AND b.enable = true
-              AND b.dateTime < :nightEnd
-              AND b.endsAt > :nightStart
-              AND (
-                  b.bookingStatus = com.github.bakdoolott.coreservice.models.enums.BookingStatus.CONFIRMED
-                  OR (
-                      b.bookingStatus = com.github.bakdoolott.coreservice.models.enums.BookingStatus.PENDING
-                      AND b.holdUntil > :now
-                  )
-              )
+            select distinct t.id from Booking b
+            join b.tables t
+            where t.id in :tableIds
+              and b.enable = true
+              and b.bookingStatus = :confirmed
+              and b.dateTime < :to
+              and b.endsAt > :from
             """)
-    Set<Long> findBookedTableIds(@Param("hallId") Long hallId,
-                                 @Param("nightStart") LocalDateTime nightStart,
-                                 @Param("nightEnd") LocalDateTime nightEnd,
-                                 @Param("now") LocalDateTime now);
+    List<Long> findBusyTableIdsAmong(@Param("tableIds") List<Long> tableIds,
+                                     @Param("from") LocalDateTime from,
+                                     @Param("to") LocalDateTime to,
+                                     @Param("confirmed") BookingStatus confirmed);
+
+    @Query("""
+        select distinct b from Booking b
+        left join fetch b.tables t
+        join fetch b.price
+        where b.enable = true
+          and b.bookingStatus = com.github.bakdoolott.coreservice.models.enums.BookingStatus.CONFIRMED
+          and b.dateTime < :to
+          and b.endsAt > :from
+        order by b.dateTime asc, b.id asc
+        """)
+    List<Booking> findAllForNight(@Param("from") LocalDateTime from,
+                                  @Param("to") LocalDateTime to);
+
+    @Query("""
+            select b from Booking b
+            left join fetch b.tables
+            join fetch b.price
+            where b.id = :id
+              and b.userId = :userId
+            """)
+    Optional<Booking> findOwnById(@Param("id") Long id, @Param("userId") Long userId);
 }

@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-add-price-id-to-booking
+      author: Viktor
+      changes:
+        - addColumn:
+            tableName: book_tb
+            columns:
+              - column:
+                  name: price_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_booking_price
+                    references: booking_price_tb(id)
