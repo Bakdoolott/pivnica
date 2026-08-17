@@ -14,4 +14,5 @@ import java.util.Optional;
 public interface HallRepo extends JpaRepository<Hall,Long> {
     Optional<Hall> findByIdAndEnable(Long id, boolean enable);
     List<Hall> findAllByHallStatusAndEnable(HallStatus hallStatus, boolean enable);
+    boolean existsByIdAndEnableTrue(Long id);
 }

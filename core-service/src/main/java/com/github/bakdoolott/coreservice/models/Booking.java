@@ -10,6 +10,8 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -56,15 +58,32 @@ public class Booking {
     @Column(name = "booking_status", nullable = false)
     BookingStatus bookingStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_table_tb", nullable = false)
-    Tables tables;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "booking_table_tb",
+            joinColumns = @JoinColumn(name = "booking_id"),
+            inverseJoinColumns = @JoinColumn(name = "table_id")
+    )
+    Set<Tables> tables = new HashSet<>();
 
     @Column(name = "user_name", nullable = false)
     String userName;
 
     @Column(name = "phone_number", nullable = false)
     String phoneNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "price_id", nullable = false)
+    BookingPrice price;
+
+    @Column(name = "cancel_reason", length = 300)
+    String cancelReason;
+
+    @Column(name = "cancelled_at")
+    LocalDateTime cancelledAt;
+
+    @Column(name = "cancelled_by")
+    Long cancelledBy;
 
     @Column(nullable = false)
     boolean enable = true;

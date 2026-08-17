@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-booking-table-join
+      author: Viktor
+      changes:
+        - createTable:
+            tableName: booking_table_tb
+            columns:
+              - column:
+                  name: booking_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_booking_table_booking
+                    references: book_tb(id)
+              - column:
+                  name: table_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_booking_table_table
+                    references: table_tb(id)
+        - addPrimaryKey:
+            tableName: booking_table_tb
+            columnNames: booking_id, table_id
+            constraintName: pk_booking_table
