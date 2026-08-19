@@ -55,7 +55,7 @@ spring:
           filters:
             - 'RewritePath=/docs/payment/(?<segment>.*), /$\{segment}'
 
-            globalcors:
+      globalcors:
         cors-configurations:
           '[/**]':
             allowed-origin-patterns:
