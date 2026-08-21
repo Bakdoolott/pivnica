@@ -1,0 +1,126 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-add-deposit-and-special-day-fields
+      author: Viktor
+      changes:
+        - addColumn:
+            tableName: table_tb
+            columns:
+              - column:
+                  name: table_type
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+                  defaultValue: "TABLE_4_CHAIRS"
+
+        - addColumn:
+            tableName: book_tb
+            columns:
+              - column:
+                  name: booking_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+                  defaultValueDate: now()
+              - column:
+                  name: day_type
+                  type: VARCHAR(16)
+                  constraints:
+                    nullable: false
+                  defaultValue: "WEEKDAY"
+              - column:
+                  name: total_amount
+                  type: DECIMAL(12,2)
+                  constraints:
+                    nullable: false
+                  defaultValueNumeric: 0
+              - column:
+                  name: refund_amount
+                  type: DECIMAL(12,2)
+              - column:
+                  name: refund_percent
+                  type: INT
+              - column:
+                  name: refund_requested
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+                  defaultValueBoolean: false
+              - column:
+                  name: refund_requested_at
+                  type: TIMESTAMP
+
+        - modifyDataType:
+            tableName: book_tb
+            columnName: price_id
+            newDataType: BIGINT
+
+        - createSequence:
+            sequenceName: special_day_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createTable:
+            tableName: special_day_tb
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: special_day_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: day_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: day_type
+                  type: VARCHAR(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: closed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+                  defaultValueDate: now()
+              - column:
+                  name: created_by
+                  type: BIGINT
+              - column:
+                  name: enable
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            tableName: special_day_tb
+            columnNames: day_date
+            constraintName: uk_special_day_date
+
+        - createIndex:
+            tableName: special_day_tb
+            indexName: idx_special_day_date
+            columns:
+              - column:
+                  name: day_date

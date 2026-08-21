@@ -1,5 +1,6 @@
 package com.github.bakdoolott.coreservice.models.dto;
 
+import com.github.bakdoolott.coreservice.models.enums.TableType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 public class TableSummaryDto {
     Long id;
     Integer tableNumber;
-    Integer placeCount;
+    TableType tableType;
     Integer x;
     Integer y;
 }

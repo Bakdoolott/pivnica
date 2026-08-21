@@ -1,6 +1,5 @@
 package com.github.bakdoolott.coreservice.models.dto.response;
 
-import com.github.bakdoolott.coreservice.models.dto.PriceSummaryDto;
 import com.github.bakdoolott.coreservice.models.dto.TableSummaryDto;
 import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
 import com.github.bakdoolott.coreservice.models.enums.PaymentStatus;
@@ -16,14 +15,12 @@ public record BookingResponse(
         String phoneNumber,
         List<TableSummaryDto> tables,
         LocalDateTime dateTime,
-        LocalDateTime endsAt,
         Integer guestCount,
         String comment,
         LocalDateTime createdAt,
         BookingStatus bookingStatus,
         PaymentStatus paymentStatus,
         String cancelReason,
-        BigDecimal totalAmount,
-        PriceSummaryDto price
+        BigDecimal totalAmount
 ){
     }

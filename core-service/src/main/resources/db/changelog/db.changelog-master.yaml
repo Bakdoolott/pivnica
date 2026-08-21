@@ -21,3 +21,9 @@ databaseChangeLog:
       file: db/changelog/changes/010-drop-id-table-tb-from-booking.yaml
   - include:
       file: db/changelog/changes/011-add-cancel-fields-to-booking.yaml
+  - include:
+      file: db/changelog/changes/012-add-deposit-and-special-day-fields.yaml
+  - include:
+      file: db/changelog/changes/013-drop-price-id-not-null.yaml
+  - include:
+      file: db/changelog/changes/014-drop-ends-at.yaml
