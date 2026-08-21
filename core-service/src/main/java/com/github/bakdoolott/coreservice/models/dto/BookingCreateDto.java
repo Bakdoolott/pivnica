@@ -15,11 +15,12 @@ import java.util.List;
 public class BookingCreateDto {
 
     @NotNull
-    @Schema(example = "[1, 2]", description = "Список ID столиков")
+    @Schema(example = "1", description = "ID зала")
     Long hallId;
 
     @NotEmpty
     @Size(max = 50)
+    @Schema(example = "[1, 2]", description = "Список ID столиков")
     List<Long> tableIds;
 
     @NotNull
