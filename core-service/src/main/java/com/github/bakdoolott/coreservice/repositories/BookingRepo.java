@@ -82,9 +82,9 @@ public interface BookingRepo extends JpaRepository<Booking,Long> {
                                 @Param("today")LocalDate today);
 
     @Query(value = "select pg_advisory_xact_lock(:userId)",nativeQuery = true)
-    Long lockFreeBookingUser(@Param("userId") Long userId);
+    void lockFreeBookingUser(@Param("userId") Long userId);
 
     @Query(value = "select pg_advisory_xact_lock(:phoneId)", nativeQuery = true)
-    Long lockFreeBookingPhone(@Param("phoneId") Long phoneId);
+    void lockFreeBookingPhone(@Param("phoneId") Long phoneId);
 }
 

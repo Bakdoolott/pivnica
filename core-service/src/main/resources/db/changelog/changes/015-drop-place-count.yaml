@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 015-drop-place-count
+      author: Viktor
+      changes:
+        - dropColumn:
+            tableName: table_tb
+            columnName: place_count
