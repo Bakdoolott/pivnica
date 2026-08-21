@@ -14,7 +14,8 @@ import java.util.Optional;
 @Repository
 public interface TableRepo extends JpaRepository<Tables,Long> {
     List<Tables> findByHallIdAndEnableTrueOrderByTableNumberAsc(Long hallId);
-    Optional<Tables> findByIdAndEnable(Long id, boolean enable);
+    Optional<Tables> findByIdAndEnable(Long id, boolean enable)
+            ;
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             select t from Tables t

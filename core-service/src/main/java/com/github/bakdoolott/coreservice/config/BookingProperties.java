@@ -9,17 +9,20 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.EnumSet;
+import java.util.Set;
 
 @Component
 @ConfigurationProperties(prefix = "booking")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Validated
 @Data
 public class BookingProperties {
-    @Min(1)
-    int holdMinutes = 15;
 
     @Min(1)
     int maxDepthDays = 30;
@@ -28,35 +31,50 @@ public class BookingProperties {
     LocalTime openTime = LocalTime.of(18, 0);
 
     @NotNull
-    LocalTime closingTime = LocalTime.of(4,0);
+    LocalTime arrivalDeadline = LocalTime.of(21, 30);
 
-    @Min(0) @Max(1440)
+    @Min(0)
     int minLeadMinutes = 30;
 
-    @Min(30) @Max(720)
-    int minDurationMinutes = 60;
+    @Min(0)
+    int arrivalGraceMinutes = 15;
 
-    @Min(1) @Max(50)
-    int maxTablesPerBooking = 10;
+    @Min(0)
+    int noShowSafetyMinutes = 5;
 
-    public boolean isOvernight() {
-        return !closingTime.isAfter(openTime);
-    }
-    @NotNull
+    @Min(0)
+    int maxTablesPerBooking = 5;
+
     ZoneId clubZone = ZoneId.of("Asia/Bishkek");
 
-    @Min(0) @Max(168)
-    int cancelCutoffHours = 6;
+    Set<DayOfWeek> peakDays = EnumSet.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY);
 
-    @Min(0) @Max(720)
+    @Min(0)
+    int maxFreeActiveBookingPerUser = 3;
+
+    @Min(0)
+    int maxFreeActiveBookingPerPhone = 3;
+
+    @Min(0)
     int refundFullBeforeHours = 24;
 
     @Min(0) @Max(100)
     int refundPartialPercent = 50;
 
-    @AssertTrue(message = "refundFullBeforeHours должен быть не меньше cancelCutoffHours")
-    public boolean isRefundWindowValid() {
-        return refundFullBeforeHours >= cancelCutoffHours;
-    }
+    @Min(0)
+    int refundWorkingDays = 3;
 
+    @Min(0)
+    int cancellationGraceMinutes = 15;
+
+    @Min(0)
+    int cancellationGraceBeforeHours = 2;
+
+    @AssertTrue(message = "arrivalDeadline должен быть позже openTime")
+    public boolean isArrivalDeadlineValid() {
+        if (arrivalDeadline == null || openTime == null) {
+            return true;
+        }
+        return arrivalDeadline.isAfter(openTime);
+    }
 }

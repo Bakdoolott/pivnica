@@ -17,7 +17,11 @@ public interface BookingService {
 
     byte[] exportBookingsForNight(LocalDate date);
 
+    BookingCancelResponse requestRefund (Long userId, Long bookingId);
+
     BookingCancelResponse getCancelResponse(Long userId, Long bookingId);
 
     BookingResponse cancelOwnBooking(Long userId, Long bookingId, String reason);
+
+    BookingResponse markNoShow(Long adminId, Long bookingId);
 }
