@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-add-created-at-to-event
+      author: Bakdoolott
+
+      changes:
+        - addColumn:
+            tableName: event
+            columns:
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueDate: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: fals
+
