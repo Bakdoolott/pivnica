@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-user-device-table
+      author: Atai
+
+      changes:
+        - createTable:
+            tableName: user_devices
+
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: device_token
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+              - column:
+                  name: device_type
+                  type: VARCHAR(50)
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueDate: CURRENT_TIMESTAMP
