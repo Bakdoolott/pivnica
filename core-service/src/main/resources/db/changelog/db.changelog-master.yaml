@@ -12,6 +12,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/changes/006-add-missing-booking-columns.yaml
   - include:
+      file: db/changelog/changes/007-add-created-at-to-event.yaml
+  - include:
       file: db/changelog/changes/007-create-booking-price-table.yaml
   - include:
       file: db/changelog/changes/008-create-booking-table-join.yaml
@@ -29,3 +31,4 @@ databaseChangeLog:
       file: db/changelog/changes/014-drop-ends-at.yaml
   - include:
       file: db/changelog/changes/015-drop-place-count.yaml
+
