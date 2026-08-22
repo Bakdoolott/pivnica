@@ -12,5 +12,5 @@ databaseChangeLog:
                   type: TIMESTAMP
                   defaultValueDate: CURRENT_TIMESTAMP
                   constraints:
-                    nullable: fals
+                    nullable: false
 

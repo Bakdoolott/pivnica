@@ -1,0 +1,26 @@
+package com.github.bakdoolott.coreservice.models.dto.response;
+
+import com.github.bakdoolott.coreservice.models.dto.TableSummaryDto;
+import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
+import com.github.bakdoolott.coreservice.models.enums.PaymentStatus;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+public record BookingResponse(
+        Long id,
+        Long userId,
+        String userName,
+        String phoneNumber,
+        List<TableSummaryDto> tables,
+        LocalDateTime dateTime,
+        Integer guestCount,
+        String comment,
+        LocalDateTime createdAt,
+        BookingStatus bookingStatus,
+        PaymentStatus paymentStatus,
+        String cancelReason,
+        BigDecimal totalAmount
+){
+    }

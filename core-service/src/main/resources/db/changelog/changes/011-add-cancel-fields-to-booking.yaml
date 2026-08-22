@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-add-cancel-fields
+      author: Viktor
+      changes:
+        - addColumn:
+            tableName: book_tb
+            columns:
+              - column:
+                  name: cancel_reason
+                  type: VARCHAR(300)
+              - column:
+                  name: cancelled_at
+                  type: TIMESTAMP
+              - column:
+                  name: cancelled_by
+                  type: BIGINT

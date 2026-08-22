@@ -1,6 +1,5 @@
 package com.github.bakdoolott.coreservice.models.dto;
 
-import com.github.bakdoolott.coreservice.models.enums.TableStatus;
 import com.github.bakdoolott.coreservice.models.enums.TableType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,11 +11,10 @@ import lombok.experimental.FieldDefaults;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TableOnDateDto {
+public class TableSummaryDto {
     Long id;
     Integer tableNumber;
+    TableType tableType;
     Integer x;
     Integer y;
-    TableType tableType;
-    TableStatus tableStatus;
 }
