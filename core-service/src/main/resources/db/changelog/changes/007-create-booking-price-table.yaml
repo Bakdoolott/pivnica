@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-create-booking-price-table
+      author: Viktor
+      changes:
+        - createSequence:
+            sequenceName: booking_price_seq
+            startValue: 1
+            incrementBy: 50
+        - createTable:
+            tableName: booking_price_tb
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: booking_price_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: price
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_at
+                  type: TIMESTAMP
+              - column:
+                  name: enable
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false

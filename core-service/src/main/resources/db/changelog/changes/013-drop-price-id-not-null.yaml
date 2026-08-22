@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-drop-price-id-not-null
+      author: Viktor
+      changes:
+        - dropNotNullConstraint:
+            tableName: book_tb
+            columnName: price_id

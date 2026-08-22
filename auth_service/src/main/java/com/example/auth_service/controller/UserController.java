@@ -1,18 +1,17 @@
 package com.example.auth_service.controller;
 
-import com.example.auth_service.dto.request.UserRequest;
 import com.example.auth_service.dto.request.UserUpdateRequest;
 import com.example.auth_service.dto.response.UserResponse;
-import com.example.auth_service.entity.model.UserEntity;import com.example.auth_service.mapper.UserMapper;
+import com.example.auth_service.entity.enums.RoleEnums;
+import com.example.auth_service.mapper.UserMapper;
 import com.example.auth_service.service.AuthService;
 import com.example.auth_service.service.UserService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,15 +21,27 @@ public class UserController {
     private final UserService service;
     private final UserMapper mapper;
     private final AuthService authService;
+    private final UserMapper userMapper;
 
-    @PutMapping("/update-user")
-    public ResponseEntity<UserResponse> update(@Valid @RequestBody UserUpdateRequest request){
-        System.out.println(request.toString());
+    @PutMapping("/update-user/admin")
+    public ResponseEntity<UserResponse> updateAdmin(@Valid @RequestBody UserUpdateRequest request){
         return ResponseEntity.ok(
                 mapper.toResponseDto(
                     service.update(
                             mapper.toEntity(request)
                     )
+                )
+        );
+    }
+
+    @PutMapping("/update-user")
+    public ResponseEntity<UserResponse> update(@Valid @RequestBody UserUpdateRequest request){
+        request.setId(authService.getCurrentUser().getId());
+        return ResponseEntity.ok(
+                mapper.toResponseDto(
+                        service.update(
+                                mapper.toEntity(request)
+                        )
                 )
         );
     }
@@ -68,6 +79,24 @@ public class UserController {
     public ResponseEntity<String> deleteUserId(@PathVariable Long id){
         return ResponseEntity.ok(
                 service.delete(id)
+        );
+    }
+
+    @PutMapping("/update-user-roles/{id}")
+    public ResponseEntity<UserResponse> updateRoles(@PathVariable Long id, @RequestBody Set<RoleEnums> roleEnums){
+        return ResponseEntity.ok(
+                userMapper.toResponseDto(
+                        service.updateRoles(roleEnums, id)
+                )
+        );
+    }
+
+    @PutMapping("/remove-user-roles/{id}")
+    public ResponseEntity<UserResponse> removeRoles(@PathVariable Long id, @RequestBody Set<RoleEnums> roleEnums){
+        return ResponseEntity.ok(
+                userMapper.toResponseDto(
+                        service.removeRoles(roleEnums, id)
+                )
         );
     }
 }
