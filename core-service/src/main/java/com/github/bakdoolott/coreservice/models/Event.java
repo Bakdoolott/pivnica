@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -51,4 +52,8 @@ public class Event {
 
     @Column(nullable = false)
     boolean enable = true;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false)
+    LocalDateTime createdAt;
 }

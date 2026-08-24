@@ -34,6 +34,13 @@ spring:
           filters:
             - StripPrefix=0
 
+        - id: notification-service-route
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/v1/notification/**
+          filters:
+            - StripPrefix=0
+
         - id: auth-service-docs
           uri: ${AUTH_SERVICE_URL:http://localhost:8081}
           predicates:
@@ -55,20 +62,32 @@ spring:
           filters:
             - 'RewritePath=/docs/payment/(?<segment>.*), /$\{segment}'
 
+        - id: notification-service-docs
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/docs/notification/**
+          filters:
+            - 'RewritePath=/docs/notification/(?<segment>.*), /$\{segment}'
+
       globalcors:
         cors-configurations:
           '[/**]':
-            allowed-origins:
-              - http://localhost:3000
+            allowed-origin-patterns:
+              - "http://localhost:*"
+              - "http://127.0.0.1:*"
+#            allowed-origins:
+#              - http://localhost:3000
             allowed-methods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - PATCH
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
+#              - GET
+#              - POST
+#              - PUT
+#              - DELETE
+#              - PATCH
+#              - OPTIONS
+              - "*"
+            allowed-headers:
+              -  "*"
+            allow-credentials: true
 
 springdoc:
   swagger-ui:
@@ -79,6 +98,8 @@ springdoc:
         url: /docs/core/v3/api-docs
       - name: Payment Service
         url: /docs/payment/v3/api-docs
+      - name: Notification Service
+        url: /docs/notification/v3/api-docs
       - name: Admin Service
         url: /docs/admin/v3/api-docs
     urls-primary-name: Core Service

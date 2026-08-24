@@ -1,6 +1,7 @@
 package com.github.bakdoolott.coreservice.models.dto;
 
 import com.github.bakdoolott.coreservice.models.enums.TableState;
+import com.github.bakdoolott.coreservice.models.enums.TableType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,11 +25,13 @@ public class TablesDto {
 
     Integer y;
 
-    Integer placeCount;
+    TableType tableType;
 
+    @Builder.Default
     TableState tableState = TableState.AVAILABLE;
 
     Long hallId;
 
+    @Builder.Default
     boolean enable = true;
 }

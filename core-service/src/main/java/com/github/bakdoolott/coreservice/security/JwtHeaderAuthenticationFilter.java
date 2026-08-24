@@ -32,13 +32,20 @@ public class JwtHeaderAuthenticationFilter extends OncePerRequestFilter {
         String roles = request.getHeader(ROLES_HEADER);
 
         if (userId != null && !userId.isBlank()) {
-            Collection<GrantedAuthority> authorities = extractAuthorities(roles);
+            try {
+                Long userIdHeader = Long.parseLong(userId.trim());
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                Collection<GrantedAuthority> authorities = extractAuthorities(roles);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(userIdHeader,null,authorities);
+
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }catch (NumberFormatException e) {
+
+            }
         }
+
 
         filterChain.doFilter(request, response);
     }

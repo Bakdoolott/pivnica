@@ -1,6 +1,7 @@
 package com.github.bakdoolott.coreservice.models;
 
 import com.github.bakdoolott.coreservice.models.enums.TableState;
+import com.github.bakdoolott.coreservice.models.enums.TableType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -39,15 +40,17 @@ public class Tables {
     @Column(name = "table_number", nullable = false)
     Integer tableNumber;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "table_type", nullable = false)
+    TableType tableType;
+
     Integer x;
 
     Integer y;
 
-    @Column(name = "place_count",nullable = false)
-    Integer placeCount;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "table_state", nullable = false)
+    @Builder.Default
     TableState tableState = TableState.AVAILABLE;
 
     @ManyToOne(fetch = FetchType.LAZY)

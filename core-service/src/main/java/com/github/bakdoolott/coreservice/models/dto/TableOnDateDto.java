@@ -1,8 +1,7 @@
 package com.github.bakdoolott.coreservice.models.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.bakdoolott.coreservice.models.enums.TableState;
 import com.github.bakdoolott.coreservice.models.enums.TableStatus;
+import com.github.bakdoolott.coreservice.models.enums.TableType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +17,6 @@ public class TableOnDateDto {
     Integer tableNumber;
     Integer x;
     Integer y;
-    Integer placeCount;
+    TableType tableType;
     TableStatus tableStatus;
 }

@@ -1,14 +1,17 @@
 CREATE DATABASE auth_db;
 CREATE DATABASE core_db;
 CREATE DATABASE payment_db;
+CREATE DATABASE notification_db;
 
 CREATE USER auth_user WITH PASSWORD 'auth_strong_pass_123';
 CREATE USER core_user WITH PASSWORD 'core_strong_pass_456';
 CREATE USER payment_user WITH PASSWORD 'payment_strong_pass_789';
+CREATE USER notification_user WITH PASSWORD 'notification_strong_pass_789';
 
 GRANT ALL PRIVILEGES ON DATABASE auth_db TO auth_user;
 GRANT ALL PRIVILEGES ON DATABASE core_db TO core_user;
 GRANT ALL PRIVILEGES ON DATABASE payment_db TO payment_user;
+GRANT ALL PRIVILEGES ON DATABASE notification_db TO notification_user;
 
 \connect auth_db
 
@@ -24,3 +27,8 @@ ALTER SCHEMA public OWNER TO core_user;
 
 GRANT USAGE, CREATE ON SCHEMA public TO payment_user;
 ALTER SCHEMA public OWNER TO payment_user;
+
+\connect notification_db
+
+GRANT USAGE, CREATE ON SCHEMA public TO notification_user;
+ALTER SCHEMA public OWNER TO notification_user;

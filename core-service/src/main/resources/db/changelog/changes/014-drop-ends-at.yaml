@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-drop-ends-at
+      author: Viktor
+      changes:
+        - dropColumn:
+            tableName: book_tb
+            columnName: ends_at
