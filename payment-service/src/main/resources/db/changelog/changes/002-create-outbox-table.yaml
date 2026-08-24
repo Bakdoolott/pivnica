@@ -1,0 +1,85 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-outbox-table
+      author: Bakdoolott
+
+      # Transactional Outbox: событие пишется в ту же транзакцию, что и платёж.
+      # Отдельный планировщик забирает записи PENDING и публикует их в Kafka,
+      # затем помечает SENT. Это гарантирует, что событие не потеряется,
+      # даже если Kafka временно недоступна в момент оплаты.
+      changes:
+        - createSequence:
+            sequenceName: outbox_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createTable:
+            tableName: outbox_event_tb
+
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: outbox_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: aggregate_type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: aggregate_id
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: event_type
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: topic
+                  type: VARCHAR(150)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: payload
+                  type: TEXT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueDate: now()
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: sent_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+
+        - createIndex:
+            tableName: outbox_event_tb
+            indexName: idx_outbox_status_created
+            columns:
+              - column:
+                  name: status
+              - column:
+                  name: created_at

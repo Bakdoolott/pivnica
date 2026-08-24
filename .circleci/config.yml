@@ -7,7 +7,6 @@ jobs:
 
     steps:
       - checkout
-
       - run:
           name: Build and push Docker images
           command: |

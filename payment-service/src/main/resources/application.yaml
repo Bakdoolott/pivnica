@@ -1,0 +1,52 @@
+server:
+  port: 8083
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:postgresql://${DB_PAYMENT_HOST:postgres}:${DB_PAYMENT_PORT:5432}/${DB_PAYMENT_NAME:payment_db}
+    username: ${DB_PAYMENT_USERNAME:payment_user}
+    password: ${DB_PAYMENT_PASSWORD:payment_strong_pass_789}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+jwt:
+  secret: ${JWT_SECRET:aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys}
+
+# Настройки платёжного сервиса
+payment:
+  # Топик, куда публикуются события об оплате (слушают core / notification)
+  events-topic: ${PAYMENT_EVENTS_TOPIC:payment.events}
+  # Валюта по умолчанию
+  default-currency: ${PAYMENT_DEFAULT_CURRENCY:KGS}
+  # МОК: как имитировать результат оплаты.
+  #   ALWAYS_SUCCESS - любая оплата успешна (по умолчанию)
+  #   AMOUNT_BASED   - сумма, кратная 100 -> успех, иначе -> отказ (для тестов ветки FAILED)
+  mock-mode: ${PAYMENT_MOCK_MODE:ALWAYS_SUCCESS}
