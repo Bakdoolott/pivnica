@@ -1,9 +1,7 @@
 package com.github.bakdoolott.coreservice.models.dto;
 
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import com.github.bakdoolott.coreservice.models.enums.TableType;
+import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -16,10 +14,13 @@ import java.time.LocalDateTime;
 public class PriceUpdateDto {
 
     @NotNull
-    @Positive
+    @PositiveOrZero
     @Digits(integer = 10, fraction = 2)
     BigDecimal price;
 
     @Future
     LocalDateTime effectiveFrom;
+
+    @NotNull
+    TableType tableType;
 }

@@ -6,20 +6,24 @@ import com.github.bakdoolott.coreservice.exceptions.LogicException;
 import com.github.bakdoolott.coreservice.exceptions.NotFoundException;
 import com.github.bakdoolott.coreservice.mappers.BookingMapper;
 import com.github.bakdoolott.coreservice.models.Booking;
+import com.github.bakdoolott.coreservice.models.BookingPrice;
 import com.github.bakdoolott.coreservice.models.Tables;
 import com.github.bakdoolott.coreservice.models.dto.BookingCancelDto;
 import com.github.bakdoolott.coreservice.models.dto.BookingCreateDto;
+import com.github.bakdoolott.coreservice.models.dto.BookingPriceLine;
 import com.github.bakdoolott.coreservice.models.dto.response.BookingCancelResponse;
 import com.github.bakdoolott.coreservice.models.dto.response.BookingResponse;
 import com.github.bakdoolott.coreservice.models.enums.*;
 import com.github.bakdoolott.coreservice.repositories.BookingRepo;
 import com.github.bakdoolott.coreservice.repositories.TableRepo;
+import com.github.bakdoolott.coreservice.services.BookingPriceService;
 import com.github.bakdoolott.coreservice.services.BookingService;
 import com.github.bakdoolott.coreservice.services.SpecialDayService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
@@ -37,13 +41,15 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final BookingProperties bookingProperties;
     private final SpecialDayService specialDayService;
+    private final BookingPriceService bookingPriceService;
 
-    public BookingServiceImpl(BookingRepo bookingRepo, TableRepo tableRepo, BookingMapper bookingMapper, BookingProperties bookingProperties, SpecialDayService specialDayService) {
+    public BookingServiceImpl(BookingRepo bookingRepo, TableRepo tableRepo, BookingMapper bookingMapper, BookingProperties bookingProperties, SpecialDayService specialDayService, BookingPriceService bookingPriceService) {
         this.bookingRepo = bookingRepo;
         this.tableRepo = tableRepo;
         this.bookingMapper = bookingMapper;
         this.bookingProperties = bookingProperties;
         this.specialDayService = specialDayService;
+        this.bookingPriceService = bookingPriceService;
     }
 
 
@@ -75,8 +81,14 @@ public class BookingServiceImpl implements BookingService {
         if (tables.size() != requestedIds.size()) {
             throw new NotFoundException("Некоторые столики не найдены");
         }
+
+        boolean depositRequired = (dayType != DayType.WEEKDAY);
+
+        Map<TableType, BookingPrice> activePries = depositRequired ? bookingPriceService.getActivePricesAt(arrivalAt) : Map.of();
+
         int totalCapacity = 0;
         BigDecimal totalDeposit = BigDecimal.ZERO;
+        List<BookingPriceLine> pendingLines = new ArrayList<>();
 
         for (Tables table : tables) {
             if (table.getTableState() == TableState.UNAVAILABLE) {
@@ -85,12 +97,17 @@ public class BookingServiceImpl implements BookingService {
             if (table.getTableType() == TableType.BAR) {
                 throw new LogicException("Место за баром не бронируется");
             }
+
             totalCapacity += table.getTableType().getCapacity();
 
-            if(dayType != DayType.WEEKDAY){
-                totalDeposit = totalDeposit.add(table.getTableType().getPrice());
+            if(depositRequired){
+                BookingPrice applied = activePries.get(table.getTableType());
+                if(applied == null){
+                    throw new LogicException("Цена для " + table.getTableType() + " не установлена");
+                }
+                totalDeposit = totalDeposit.add(applied.getPrice());
+                pendingLines.add(BookingPriceLine.of(null, table.getId(),table.getTableType(),applied));
             }
-
         }
         if (dto.getGuestCount() > totalCapacity) {
             throw new LogicException("Гостей больше, чем мест за выбранными столами");
@@ -125,13 +142,19 @@ public class BookingServiceImpl implements BookingService {
         booking.setTables(new HashSet<>(tables));
         booking.setBookingDate(bookingDate);
         booking.setDateTime(arrivalAt);
+
         booking.setGuestCount(dto.getGuestCount());
         if(dto.getComment() != null && !dto.getComment().isBlank()){
             booking.setComment(dto.getComment().trim());
             }
+
         booking.setCreatedAt(now);
         booking.setDayType(dayType);
+
         booking.setTotalAmount(formatMoney(totalDeposit));
+        for(BookingPriceLine line : pendingLines){
+            booking.addPriceLine(line);
+        }
 
         LocalDateTime graceTime = arrivalAt.plusMinutes(bookingProperties.getArrivalGraceMinutes());
         LocalDateTime hardDeadLine = bookingDate.atTime(bookingProperties.getArrivalDeadline());

@@ -1,5 +1,6 @@
 package com.github.bakdoolott.coreservice.models;
 
+import com.github.bakdoolott.coreservice.models.dto.BookingPriceLine;
 import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
 import com.github.bakdoolott.coreservice.models.enums.DayType;
 import com.github.bakdoolott.coreservice.models.enums.PaymentStatus;
@@ -108,4 +109,12 @@ public class Booking {
 
     @Version
     Long version;
+
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<BookingPriceLine> priceLines = new HashSet<>();
+
+    public void addPriceLine(BookingPriceLine line) {
+        priceLines.add(line);
+        line.setBooking(this);
+    }
 }
