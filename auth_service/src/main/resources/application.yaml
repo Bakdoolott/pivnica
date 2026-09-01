@@ -2,7 +2,7 @@ spring:
   application:
     name: auth-service
   profiles:
-    active: db,tg
+    active: db,sms,auth
 
 server:
   port: 8081

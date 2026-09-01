@@ -2,8 +2,6 @@ package com.example.auth_service.security;
 import com.example.auth_service.entity.model.RefreshTokenEntity;
 import com.example.auth_service.entity.model.UserEntity;
 import com.example.auth_service.repository.RefreshTokenRepository;
-import com.example.auth_service.service.AuthService;
-import jakarta.ws.rs.NotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

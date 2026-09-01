@@ -1,0 +1,8 @@
+auth:
+  code:
+    ttl: ${AUTH_TTL:PT2M}
+    resend-interval: ${AUTH_RESEND_INTERVAL:PT1M}
+    max-attempts: ${AUTH_MAX_ATTEMPTS:5}
+  test-account:
+    phone: ${AUTH_TEST_PHONE:}
+    code: ${AUTH_TEST_CODE:}

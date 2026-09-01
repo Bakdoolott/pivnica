@@ -1,0 +1,6 @@
+nikita:
+  sms:
+    login: ${NIKITA_SMS_LOGIN:}
+    password: ${NIKITA_SMS_PASSWORD:}
+    sender: ${NIKITA_SMS_SENDER:} # нужно вписать имя отправиля которое будет в личном кб
+    test: ${NIKITA_SMS_TEST:false}

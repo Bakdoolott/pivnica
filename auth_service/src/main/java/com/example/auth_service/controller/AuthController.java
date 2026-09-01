@@ -33,6 +33,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(UserEntity.builder().phoneNumber(loginRequest.phone()).build()));
     }
 
+    @PostMapping("/registration")
+    public ResponseEntity<?> registration(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.registration(request.phone()));
+    }
+
     @PostMapping("/mobile/verify-code")
     public ResponseEntity<?> verifyMobileCode(@RequestBody VerifyCodeRequest request) {
         return ResponseEntity.ok(authService.verify(request.phone(), request.code()));
