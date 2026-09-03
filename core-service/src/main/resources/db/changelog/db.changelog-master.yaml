@@ -31,4 +31,6 @@ databaseChangeLog:
       file: db/changelog/changes/014-drop-ends-at.yaml
   - include:
       file: db/changelog/changes/015-drop-place-count.yaml
+  - include:
+      file: db/changelog/changes/016-rework-booking-price.yaml
 

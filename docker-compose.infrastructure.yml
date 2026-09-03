@@ -87,15 +87,6 @@ services:
     networks:
       - backend
 
-  notification-service:
-    build:
-      context: ./notification-service
-      dockerfile: Dockerfile
-    container_name: notification-service
-    restart: always
-    ports:
-      - "5434:5432"
-    environment:
 
 
 volumes:

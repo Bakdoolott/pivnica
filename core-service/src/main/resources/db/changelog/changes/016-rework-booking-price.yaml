@@ -1,0 +1,139 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-rework-booking-price
+      author: Viktor
+      changes:
+        # 1. Дискриминатор + версия для таблицы цен
+        - addColumn:
+            tableName: booking_price_tb
+            columns:
+              - column:
+                  name: table_type
+                  type: VARCHAR(32)
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+        # 2. Заполнить table_type для существующих записей (если были)
+        - update:
+            tableName: booking_price_tb
+            columns:
+              - column:
+                  name: table_type
+                  value: TABLE_4_CHAIRS
+            where: table_type IS NULL
+
+        # 3. Вставить недостающие цены по типам столов (сид-данные)
+        - sql:
+            splitStatements: false
+            sql: |
+              INSERT INTO booking_price_tb (id, price, created_at, start_at, end_at, enable, table_type, version)
+              SELECT nextval('booking_price_seq'), v.price, now(), now(), NULL, true, v.table_type, 0
+              FROM (VALUES
+                ('CABIN_15', 30000.00),
+                ('CABIN_10', 20000.00),
+                ('TABLE_2', 4000.00),
+                ('TABLE_3', 6000.00),
+                ('TABLE_4_CHAIRS', 10000.00),
+                ('TABLE_4_SOFA', 15000.00),
+                ('BAR', 0.00)
+              ) AS v(table_type, price)
+              WHERE NOT EXISTS (
+                SELECT 1 FROM booking_price_tb p
+                WHERE p.table_type = v.table_type
+                  AND p.enable = true
+                  AND p.end_at IS NULL
+              );
+
+        # 4. Сделать table_type NOT NULL
+        - addNotNullConstraint:
+            tableName: booking_price_tb
+            columnName: table_type
+            columnDataType: VARCHAR(32)
+
+        # 5. Уникальный индекс на одну открытую цену на тип (защита от дублей)
+        - sql:
+            sql: >
+              CREATE UNIQUE INDEX uk_booking_price_open_per_type
+              ON booking_price_tb (table_type)
+              WHERE end_at IS NULL AND enable = true;
+
+        # 6. Индекс для быстрого поиска актуальной цены
+        - createIndex:
+            tableName: booking_price_tb
+            indexName: idx_booking_price_lookup
+            columns:
+              - column:
+                  name: table_type
+              - column:
+                  name: start_at
+                  descending: true
+
+        # 7. Таблица строк цены (BookingPriceLine)
+        - createSequence:
+            sequenceName: booking_price_line_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createTable:
+            tableName: booking_price_line_tb
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: booking_price_line_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: booking_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_price_line_booking
+                    references: book_tb(id)
+              - column:
+                  name: table_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: table_type
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: unit_price
+                  type: DECIMAL(12,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_price_line_price
+                    references: booking_price_tb(id)
+
+        # 8. Индекс для быстрых запросов строк по брони
+        - createIndex:
+            tableName: booking_price_line_tb
+            indexName: idx_price_line_booking
+            columns:
+              - column:
+                  name: booking_id
+
+        # 9. Удалить старую колонку price_id из book_tb (больше не нужна)
+        - dropColumn:
+            tableName: book_tb
+            columnName: price_id
+
+        # 10. Индекс на горячем пути – выборка броней по дате и статусу
+        - sql:
+            sql: >
+              CREATE INDEX idx_booking_date_status
+              ON book_tb (booking_date, booking_status)
+              WHERE enable = true;
