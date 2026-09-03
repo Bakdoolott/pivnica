@@ -1,5 +1,6 @@
 package com.github.bakdoolott.coreservice.models;
 
+import com.github.bakdoolott.coreservice.models.enums.TableType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,6 +24,10 @@ public class BookingPrice {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "booking_price_seq")
     Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "table_type", nullable = false, length = 32)
+    TableType tableType;
+
     @Column(nullable = false, precision = 12, scale = 2)
     BigDecimal price;
 
@@ -37,4 +42,11 @@ public class BookingPrice {
 
     @Column(nullable = false)
     boolean enable = true;
+
+    @Version
+    Long version;
+
+    public boolean isOpen(){
+        return enable && endAt == null;
+    }
 }
