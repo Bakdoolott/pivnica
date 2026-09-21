@@ -1,5 +1,6 @@
 package com.example.auth_service.service.impl;
 
+import com.example.auth_service.dto.request.SmsProRequest;
 import com.example.auth_service.dto.response.TokenResponse;
 import com.example.auth_service.entity.model.TemporaryCodeEntity;
 import com.example.auth_service.entity.model.UserEntity;
@@ -12,6 +13,7 @@ import com.example.auth_service.service.SmsProService;
 import com.example.auth_service.service.UserService;
 import com.example.auth_service.util.PhoneNumberNormalizer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -74,7 +77,16 @@ public class AuthServiceImpl implements AuthService {
                 .enable(true)
                 .build());
 
-        smsProService.send(phone.substring(1), "Ваш код: " + code);
+        SmsProRequest smsResult = smsProService.send(phone.substring(1), "Ваш код: " + code);
+
+        log.info("Nikita SMS ответ: phone={}, success={}, status={}, message={}",
+                phone, smsResult.success(), smsResult.status(), smsResult.message());
+
+        if (!smsResult.success()) {
+            throw new RuntimeException(
+                    "Не удалось отправить SMS через Nikita (status=" + smsResult.status()
+                            + "): " + smsResult.message());
+        }
     }
 
     @Override
