@@ -15,8 +15,9 @@ import java.time.Instant;
 @Table(name = "temporary_code_tb")
 public class TemporaryCodeEntity extends BaseEntity {
 
-    @Column(name = "phone_number", nullable = false)
-    private String phoneNumber;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_user_db", nullable = false)
+    private UserEntity user;
 
     @Column(nullable = false)
     private String code;
@@ -35,4 +36,6 @@ public class TemporaryCodeEntity extends BaseEntity {
     @Builder.Default
     @Column(nullable = false)
     private boolean enable = true;
+
 }
+
