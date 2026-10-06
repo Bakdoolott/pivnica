@@ -1,6 +1,6 @@
 package com.example.auth_service.service.impl;
 
-import com.example.auth_service.dto.request.SmsProRequest;
+import com.example.auth_service.bot.LoginTelegramBot;
 import com.example.auth_service.dto.response.TokenResponse;
 import com.example.auth_service.entity.model.TemporaryCodeEntity;
 import com.example.auth_service.entity.model.UserEntity;
@@ -9,56 +9,54 @@ import com.example.auth_service.security.JwtCore;
 import com.example.auth_service.security.RefreshTokenService;
 import com.example.auth_service.security.UserDetailsImpl;
 import com.example.auth_service.service.AuthService;
-import com.example.auth_service.service.SmsProService;
 import com.example.auth_service.service.UserService;
-import com.example.auth_service.util.PhoneNumberNormalizer;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
-    @Value("${auth.code.ttl}")
-    private Duration codeTtl;
-
-    @Value("${auth.code.resend-interval}")
-    private Duration resendInterval;
-
-    @Value("${auth.code.max-attempts}")
-    private int maxAttempts;
-
-    @Value("${auth.test-account.phone:}")
-    private String testPhone;
-
-    @Value("${auth.test-account.code:}")
-    private String testCode;
+    private final Duration CODE_TTL;
+    private final Duration RESEND_INTERVAL;
+    private final int MAX_ATTEMPTS;
 
     private final TemporaryCodeRepository temporaryCodeRepository;
     private final RefreshTokenService refreshTokenService;
-    private final SmsProService smsProService;
+    private final LoginTelegramBot loginTelegramBot;
     private final UserService userService;
     private final JwtCore jwtCore;
-    private final SecureRandom random = new SecureRandom();
+    private final SecureRandom random;
+
+    @Autowired
+    public AuthServiceImpl(TemporaryCodeRepository temporaryCodeRepository,
+                           RefreshTokenService refreshTokenService,
+                           LoginTelegramBot loginTelegramBot,
+                           UserService userService,
+                           JwtCore jwtCore) {
+        this.temporaryCodeRepository = temporaryCodeRepository;
+        this.refreshTokenService = refreshTokenService;
+        this.loginTelegramBot = loginTelegramBot;
+        this.userService = userService;
+        this.jwtCore = jwtCore;
+        this.random = new SecureRandom();
+        CODE_TTL = Duration.ofMinutes(2);
+        RESEND_INTERVAL = Duration.ofSeconds(60);
+        MAX_ATTEMPTS = 5;
+    }
 
     @Override
     @Transactional
-    public void generateAndSend(String phoneNumber) {
-        String phone = PhoneNumberNormalizer.normalize(phoneNumber);
+    public void generateAndSend(String phoneNumber, Long chatId) {
+        UserEntity user = userService.findByPhoneNumber(phoneNumber);
 
-        temporaryCodeRepository.findByPhoneNumberAndEnableTrue(phone)
+        temporaryCodeRepository.findByUser_IdAndEnableTrue(user.getId())
                 .ifPresent(active -> {
-                    if (Duration.between(active.getCreatedAt(), Instant.now()).compareTo(resendInterval) < 0) {
+                    if (Duration.between(active.getCreatedAt(), Instant.now()).compareTo(RESEND_INTERVAL) < 0) {
                         throw new RuntimeException("Подождите перед повторной отправкой кода");
                     }
                     active.setEnable(false);
@@ -68,40 +66,34 @@ public class AuthServiceImpl implements AuthService {
         String code = generatedCode();
         Instant now = Instant.now();
 
-        temporaryCodeRepository.save(TemporaryCodeEntity.builder()
-                .phoneNumber(phone)
-                .code(code)
-                .createdAt(now)
-                .expiresAt(now.plus(codeTtl))
-                .attempts(0)
-                .enable(true)
-                .build());
-
-        SmsProRequest smsResult = smsProService.send(phone.substring(1), "Ваш код: " + code);
-
-        log.info("Nikita SMS ответ: phone={}, success={}, status={}, message={}",
-                phone, smsResult.success(), smsResult.status(), smsResult.message());
-
-        if (!smsResult.success()) {
-            throw new RuntimeException(
-                    "Не удалось отправить SMS через Nikita (status=" + smsResult.status()
-                            + "): " + smsResult.message());
+        TemporaryCodeEntity entity = temporaryCodeRepository.findByUser_Id(user.getId())
+                        .orElse(null);
+        if(entity == null) {
+            temporaryCodeRepository.save(TemporaryCodeEntity.builder()
+                    .user(user)
+                    .code(code)
+                    .createdAt(now)
+                    .expiresAt(now.plus(CODE_TTL))
+                    .attempts(0)
+                    .enable(true)
+                    .build());
+        }else {
+            entity.setCode(code);
+            entity.setCreatedAt(now);
+            entity.setExpiresAt(now.plus(CODE_TTL));
+            entity.setAttempts(entity.getAttempts() + 1);
+            entity.setEnable(true);
+            temporaryCodeRepository.save(entity);
         }
+        loginTelegramBot.sendTextMessage(chatId, "Ваш код: " + code);
     }
 
     @Override
     @Transactional
     public TokenResponse verify(String phoneNumber, String code) {
-        String phone = PhoneNumberNormalizer.normalize(phoneNumber);
+        UserEntity user = userService.findByPhoneNumber(phoneNumber);
 
-        if (StringUtils.hasText(testPhone) && phone.equals(testPhone)) {
-            if (!code.equals(testCode)) {
-                throw new RuntimeException("Неверный код");
-            }
-            return issueTokenPair(userService.findOrCreateByPhoneNumber(phone));
-        }
-
-        TemporaryCodeEntity active = temporaryCodeRepository.findByPhoneNumberAndEnableTrue(phone)
+        TemporaryCodeEntity active = temporaryCodeRepository.findByUser_IdAndEnableTrue(user.getId())
                 .orElseThrow(() -> new RuntimeException("Неверный или истёкший код"));
 
         if (active.getExpiresAt().isBefore(Instant.now())) {
@@ -110,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Код истёк, запросите новый");
         }
 
-//        if (active.getAttempts() >= maxAttempts) {
+//        if (active.getAttempts() >= MAX_ATTEMPTS) {
 //            active.setEnable(false);
 //            temporaryCodeRepository.save(active);
 //            throw new RuntimeException("Превышено число попыток, запросите новый код");
@@ -125,7 +117,6 @@ public class AuthServiceImpl implements AuthService {
         active.setEnable(false);
         temporaryCodeRepository.save(active);
 
-        UserEntity user = userService.findOrCreateByPhoneNumber(phone);
         return issueTokenPair(user);
     }
 
@@ -146,22 +137,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(UserEntity userEntity) {
-        UserEntity existing = userService.findByPhoneNumber(userEntity.getPhoneNumber());
-        generateAndSend(existing.getPhoneNumber());
-        return "Отправлен код";
+        UserEntity entity = userService.findByPhoneNumber(userEntity.getPhoneNumber());
+        generateAndSend(entity.getPhoneNumber(), entity.getChatId());
+        return "Отправлен код в Telegram";
     }
 
     @Override
     public UserEntity getCurrentUser() {
+        // Принципал кладёт JwtHeaderAuthenticationFilter: это UserDetailsImpl,
+        // собранный из свежих данных БД по X-User-Id. Берём id и перечитываем сущность.
         UserDetailsImpl principal = (UserDetailsImpl)
                 SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userService.findById(principal.getId());
-    }
-
-    @Override
-    public String registration(String phone) {
-        generateAndSend(phone);
-        return "Отправлен код";
     }
 
     private TokenResponse issueTokenPair(UserEntity user) {

@@ -1,1 +1,0 @@
-ALTER TABLE user_tb drop column IF EXISTS chat_id;
