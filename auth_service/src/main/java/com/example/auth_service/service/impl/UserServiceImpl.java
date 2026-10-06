@@ -31,7 +31,6 @@ public class UserServiceImpl implements UserService {
                 .map(existing -> {
                     existing.setFirstName(entity.getFirstName());
                     existing.setTgUserName(entity.getTgUserName());
-                    existing.setChatId(entity.getChatId());
                     return userRepository.save(existing);
                 })
                 .orElseGet(() -> {
@@ -50,6 +49,18 @@ public class UserServiceImpl implements UserService {
             throw new UsernameNotFoundException("Пользователь не найден");
         }
         return user;
+    }
+
+    @Override
+    @Transactional
+    public UserEntity findOrCreateByPhoneNumber(String phoneNumber) {
+        String normalized = PhoneNumberNormalizer.normalize(phoneNumber);
+        return userRepository.findByPhoneNumber(normalized)
+                .orElseGet(() -> userRepository.save(
+                        UserEntity.builder()
+                                .phoneNumber(normalized)
+                                .roles(Set.of(RoleEnums.USER))
+                                .build()));
     }
 
     @Override

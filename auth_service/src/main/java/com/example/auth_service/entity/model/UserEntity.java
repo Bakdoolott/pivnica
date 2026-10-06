@@ -30,9 +30,6 @@ public class UserEntity extends BaseEntity {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "chat_id", nullable = false)
-    private Long chatId;
-
     @Builder.Default
     @Column(nullable = false)
     private boolean enable = false;
@@ -51,7 +48,6 @@ public class UserEntity extends BaseEntity {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
-                ", chatId=" + chatId +
                 ", enable=" + enable +
                 ", roles=" + roles +
                 ", id=" + id +

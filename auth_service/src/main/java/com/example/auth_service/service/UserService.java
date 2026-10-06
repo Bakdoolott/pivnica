@@ -9,6 +9,7 @@ import java.util.Set;
 public interface UserService extends UserDetailsService {
     UserEntity save(UserEntity entity);
     UserEntity findByPhoneNumber(String phoneNumber);
+    UserEntity findOrCreateByPhoneNumber(String phoneNumber);   // ← новый
     UserEntity update(UserEntity entity);
     String delete(Long id);
     UserEntity findById(Long id);

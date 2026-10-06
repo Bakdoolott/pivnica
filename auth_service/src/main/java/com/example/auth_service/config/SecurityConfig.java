@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/auth/mobile/refresh",
                                 "/api/v1/auth/auth/web/refresh",
                                 "/api/v1/auth/auth/mobile/logout",
-                                "/api/v1/auth/auth/web/logout"
+                                "/api/v1/auth/auth/web/logout",
+                                "/api/v1/auth/auth/registration"
                         ).permitAll()
 
                         //UserController — авторизация по ролям (роли берутся из БД фильтром).
