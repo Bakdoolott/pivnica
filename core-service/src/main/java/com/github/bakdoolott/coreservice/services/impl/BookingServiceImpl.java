@@ -19,6 +19,7 @@ import com.github.bakdoolott.coreservice.repositories.TableRepo;
 import com.github.bakdoolott.coreservice.services.BookingPriceService;
 import com.github.bakdoolott.coreservice.services.BookingService;
 import com.github.bakdoolott.coreservice.services.SpecialDayService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingProperties bookingProperties;
     private final SpecialDayService specialDayService;
     private final BookingPriceService bookingPriceService;
+
 
     public BookingServiceImpl(BookingRepo bookingRepo, TableRepo tableRepo, BookingMapper bookingMapper, BookingProperties bookingProperties, SpecialDayService specialDayService, BookingPriceService bookingPriceService) {
         this.bookingRepo = bookingRepo;

@@ -2,6 +2,7 @@ package com.github.bakdoolott.coreservice.services;
 import com.github.bakdoolott.coreservice.models.dto.response.EventResponse;
 import com.github.bakdoolott.coreservice.models.dto.response.EventBannerDTO;
 import com.github.bakdoolott.coreservice.models.dto.request.EventCreateRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -13,4 +14,5 @@ public interface EventService {
     EventResponse unpublishEvent(Long id);
 EventResponse updateEvent(Long id, EventCreateRequest request);
     void deleteEvent(Long id);
+    void uploadImage(Long id, MultipartFile file);
 }

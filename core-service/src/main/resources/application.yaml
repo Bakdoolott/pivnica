@@ -1,6 +1,7 @@
 server:
   port: 8082
   forward-headers-strategy: framework
+  upload-dir: uploads
 
 spring:
   application:
@@ -9,12 +10,20 @@ spring:
     url: jdbc:postgresql://${DB_CORE_HOST:postgres}:${DB_CORE_PORT:5432}/${DB_CORE_NAME:core_db}
     username: ${DB_CORE_USERNAME:core_user}
     password: ${DB_CORE_PASSWORD:core_strong_pass_456}
+
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  servlet:
+    multipart:
+      # Максимальный размер одного файла
+      max-file-size: 5MB
+      # Максимальный размер всего запроса (включая текстовые поля и несколько файлов)
+      max-request-size: 10MB
 
 management:
   endpoints:

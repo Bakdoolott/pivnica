@@ -47,7 +47,6 @@ public interface BookingRepo extends JpaRepository<Booking,Long> {
               and b.userId = :userId
             """)
     Optional<Booking> findOwnById(@Param("id") Long id, @Param("userId") Long userId);
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
            select b from Booking b
