@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 018-drop-amount-from-payment-qr
+      author: Viktor
+      changes:
+        - dropColumn:
+            tableName: payment_qr_tb
+            columnName: amount

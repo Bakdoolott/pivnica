@@ -1,8 +1,6 @@
-package com.github.bakdoolott.coreservice.models.dto;
+package com.github.bakdoolott.coreservice.models;
 
 
-import com.github.bakdoolott.coreservice.models.Booking;
-import com.github.bakdoolott.coreservice.models.BookingPrice;
 import com.github.bakdoolott.coreservice.models.enums.TableType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

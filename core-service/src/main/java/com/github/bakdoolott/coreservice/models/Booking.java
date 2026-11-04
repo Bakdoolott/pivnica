@@ -1,6 +1,5 @@
 package com.github.bakdoolott.coreservice.models;
 
-import com.github.bakdoolott.coreservice.models.dto.BookingPriceLine;
 import com.github.bakdoolott.coreservice.models.enums.BookingStatus;
 import com.github.bakdoolott.coreservice.models.enums.DayType;
 import com.github.bakdoolott.coreservice.models.enums.PaymentStatus;
@@ -117,4 +116,21 @@ public class Booking {
         priceLines.add(line);
         line.setBooking(this);
     }
+    @Column(name = "payment_sent_at")
+    LocalDateTime paymentSentAt;
+
+    @Column(name = "confirmed_by")
+    Long confirmedBy;
+
+    @Column(name = "confirmed_at")
+    LocalDateTime confirmedAt;
+
+    @Column(name = "rejection_reason", length = 300)
+    String rejectionReason;
+
+    @Column(name = "rejected_by")
+    Long rejectedBy;
+
+    @Column(name = "rejected_at")
+    LocalDateTime rejectedAt;
 }

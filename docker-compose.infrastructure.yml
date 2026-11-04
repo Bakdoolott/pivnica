@@ -61,6 +61,9 @@ services:
       - DB_CORE_NAME=core_db
       - DB_CORE_USERNAME=core_user
       - DB_CORE_PASSWORD=core_strong_pass_456
+      - PAYMENT_QR_DIR=/app/uploads/payment-qr
+    volumes:
+      - payment_qr_uploads:/app/uploads/payment-qr
     depends_on:
       - postgres
     networks:
@@ -87,7 +90,6 @@ services:
     networks:
       - backend
 
-
-
 volumes:
   postgres_data:
+  payment_qr_uploads:

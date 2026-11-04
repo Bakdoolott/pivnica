@@ -11,13 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,36 +20,39 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Залы")
 public class HallController {
+
     private final HallService service;
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
     @Operation(summary = "Создание зала")
-    public ResponseEntity<HallResponse> create(CreateHallRequest request){
+    public ResponseEntity<HallResponse> create(
+            @Valid @RequestBody CreateHallRequest request) {          // ← @Valid + @RequestBody
         return new ResponseEntity<>(service.create(request), HttpStatus.CREATED);
     }
 
     @PatchMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
     @Operation(summary = "Обновление зала")
-    public ResponseEntity<HallResponse> update(@Valid UpdateHallRequest request){
+    public ResponseEntity<HallResponse> update(
+            @Valid @RequestBody UpdateHallRequest request) {          // ← @RequestBody
         return new ResponseEntity<>(service.update(request), HttpStatus.OK);
     }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Нахождение всех залов",
-            description = "Находит все залы, ничего не принимает, возвращает список"
+            summary = "Все активные залы",
+            description = "Список активных залов (включая UNAVAILABLE — для админки)"
     )
-    public ResponseEntity<List<HallResponse>> getAll(){
+    public ResponseEntity<List<HallResponse>> getAll() {
         return new ResponseEntity<>(service.getAll(), HttpStatus.OK);
     }
 
     @DeleteMapping("{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
     @Operation(summary = "Удаление зала по Id")
-    public ResponseEntity<Void> deleteHall(@PathVariable Long id){
+    public ResponseEntity<Void> deleteHall(@PathVariable Long id) {
         service.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }

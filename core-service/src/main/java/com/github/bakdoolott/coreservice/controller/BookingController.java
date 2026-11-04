@@ -72,6 +72,7 @@ public class BookingController {
                 .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
                 .body(body);
     }
+
     @GetMapping("/{id}/cancellation")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Условия отмены брони",
@@ -93,15 +94,15 @@ public class BookingController {
 
         return ResponseEntity.ok(bookingService.cancelOwnBooking(userId, id, reason));
     }
-    
+
     @PostMapping("/{id}/refund")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Запрос на возврат средств",description = "Создает заявку на возврат после отмены брони")
+    @Operation(summary = "Запрос на возврат средств", description = "Создает заявку на возврат после отмены брони")
     public ResponseEntity<BookingCancelResponse> requestRefund(
             @AuthenticationPrincipal Long userId,
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
-        return ResponseEntity.ok(bookingService.requestRefund(userId,id));
+        return ResponseEntity.ok(bookingService.requestRefund(userId, id));
     }
 
     @PostMapping("/{id}/no-show")
@@ -109,5 +110,33 @@ public class BookingController {
     @Operation(summary = "Отметить неявку гостя")
     public ResponseEntity<BookingResponse> markNoShow(@AuthenticationPrincipal Long adminId, @PathVariable Long id) {
         return ResponseEntity.ok(bookingService.markNoShow(adminId, id));
+    }
+
+    @PostMapping("/{id}/payment-sent")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Отметить, что оплата отправлена",
+            description = "Гость нажал 'Я оплатил' после отправки чека")
+    public ResponseEntity<BookingResponse> markPaymentSent(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.markPaymentSent(userId, id));
+    }
+
+    @PostMapping("/{id}/departed")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNER')")
+    @Operation(summary = "Отметить уход гостя (стол свободен)")
+    public ResponseEntity<BookingResponse> markDeparted(
+            @AuthenticationPrincipal Long adminId,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.markDeparted(adminId, id));
+    }
+
+    @PostMapping("/{id}/arrived")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNER')")
+    @Operation(summary = "Отметить приход гостя")
+    public ResponseEntity<BookingResponse> markArrived(
+            @AuthenticationPrincipal Long adminId,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.markArrived(adminId, id));
     }
 }

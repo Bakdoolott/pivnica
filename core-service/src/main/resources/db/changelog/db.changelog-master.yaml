@@ -33,4 +33,12 @@ databaseChangeLog:
       file: db/changelog/changes/015-drop-place-count.yaml
   - include:
       file: db/changelog/changes/016-rework-booking-price.yaml
+  - include:
+      file: db/changelog/changes/017-create-payment-qr-table.yaml
+  - include:
+      file: db/changelog/changes/018-drop-amount-from-payment-qr.yaml
+  - include:
+      file: db/changelog/changes/019-add-booking-confirmation-fields.yaml
+  - include:
+      file: db/changelog/changes/020-hall-unique-partial.yaml
 

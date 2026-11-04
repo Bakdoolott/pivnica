@@ -34,7 +34,8 @@ public class SecurityConfig {
                                 "/webjars/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/docs/**",
-                                "/actuator/health"  // если используешь health check
+                                "/actuator/health",
+                                "/uploads/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
