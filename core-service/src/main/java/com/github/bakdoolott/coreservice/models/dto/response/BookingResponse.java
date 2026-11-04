@@ -21,6 +21,12 @@ public record BookingResponse(
         BookingStatus bookingStatus,
         PaymentStatus paymentStatus,
         String cancelReason,
-        BigDecimal totalAmount
+        BigDecimal totalAmount,
+        LocalDateTime paymentSentAt,
+        Long confirmedBy,
+        LocalDateTime confirmedAt,
+        String rejectionReason,
+        Long rejectedBy,
+        LocalDateTime rejectedAt
 ){
     }
