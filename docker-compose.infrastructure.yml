@@ -56,8 +56,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - JWT_SECRET=aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
-      - DB_CORE_HOST=postgres
-      - DB_CORE_PORT=5432
+      - DB_CORE_HOST=postgres  # Имя сервиса в docker-compose
+      - DB_CORE_PORT=5432      # Внутренний порт Docker
       - DB_CORE_NAME=core_db
       - DB_CORE_USERNAME=core_user
       - DB_CORE_PASSWORD=core_strong_pass_456
@@ -65,7 +65,8 @@ services:
     volumes:
       - payment_qr_uploads:/app/uploads/payment-qr
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - backend
 
@@ -79,14 +80,14 @@ services:
       - "8081:8081"
     environment:
       - JWT_SECRET=aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=auth_db
+      - DB_HOST=postgres       # Добавьте хост, если его не было
+      - DB_NAME=auth_db        # Имя БД (в init_db.sql вы создаете auth_db, а не postgres)
+      - DB_PORT=5432           # Внутренний порт Docker
       - DB_USERNAME=auth_user
       - DB_PASSWORD=auth_strong_pass_123
-      - BOT_TOKEN=8625864637:AAEtNeyvcK-umEwmkADj1rlZtOgoid2nVB8
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - backend
 
