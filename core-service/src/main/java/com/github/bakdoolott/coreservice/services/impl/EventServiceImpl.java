@@ -30,8 +30,8 @@ public class EventServiceImpl implements EventService{
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
     private FileStorageService fileStorageService;
-    @Value("${app.upload-dir}")
-    private String uploadDir;
+    @Value("${server.upload-dir}")
+    private String uploadDir;;
 
 
     @Override

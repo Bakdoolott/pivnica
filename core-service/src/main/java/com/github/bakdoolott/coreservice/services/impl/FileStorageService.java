@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class FileStorageService {
     private final Path rootLocation;
 
-    public FileStorageService(@Value("${app.upload-dir}") String uploadDir) {
+    public FileStorageService(@Value("${server.upload-dir}") String uploadDir) {
         this.rootLocation = Paths.get(uploadDir);
     }
 
