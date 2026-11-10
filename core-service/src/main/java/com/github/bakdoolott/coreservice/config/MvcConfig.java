@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {
 
-    @Value("${app.upload-dir}")
+    @Value("${storage.payment-qr-dir:./uploads/payment-qr}")
     private String uploadDir;
 
     @Override
