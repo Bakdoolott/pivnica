@@ -24,4 +24,20 @@ public interface BookingService {
     BookingResponse cancelOwnBooking(Long userId, Long bookingId, String reason);
 
     BookingResponse markNoShow(Long adminId, Long bookingId);
+
+    BookingResponse markPaymentSent(Long userId, Long bookingId);
+
+    List<BookingResponse> getAwaitingConfirmation();
+
+    BookingResponse confirmByAdmin(Long adminId, Long bookingId);
+
+    BookingResponse rejectByAdmin(Long adminId, Long bookingId, String reason, boolean moneyReceived);
+
+    BookingResponse markArrived(Long adminId, Long bookingId);
+
+    BookingResponse markDeparted(Long adminId, Long bookingId);
+
+    List<BookingResponse> getRefundRequests();
+
+    BookingResponse markRefunded(Long adminId, Long bookingId);
 }

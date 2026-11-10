@@ -1,0 +1,67 @@
+databaseChangeLog:
+  - changeSet:
+      id: 017-create-payment-qr-table
+      author: Viktor
+      changes:
+        - createSequence:
+            sequenceName: payment_qr_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createTable:
+            tableName: payment_qr_tb
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: payment_qr_seq
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: image_url
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+              - column:
+                  name: amount
+                  type: DECIMAL(12,2)
+              - column:
+                  name: enable
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: BIGINT
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+              - column:
+                  name: updated_by
+                  type: BIGINT
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            tableName: payment_qr_tb
+            indexName: idx_payment_qr_active
+            columns:
+              - column:
+                  name: enable
+              - column:
+                  name: created_at
+                  descending: true

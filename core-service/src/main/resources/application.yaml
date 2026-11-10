@@ -17,6 +17,11 @@ spring:
     open-in-view: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 10MB
 
   servlet:
     multipart:
@@ -40,3 +45,11 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET:aZUyHFCj6SUG2hI5sGHFifB2iQkfIY3nTztuTVdws4Ys}
+
+storage:
+  payment-qr-dir: ${PAYMENT_QR_DIR:./uploads/payment-qr}
+
+booking:
+  payment-timeout-minutes: 15
+  expiration-delay-ms: 60000
+  no-show-delay-ms: 60000

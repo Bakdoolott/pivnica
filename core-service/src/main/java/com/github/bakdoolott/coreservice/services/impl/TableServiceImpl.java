@@ -14,15 +14,16 @@ import com.github.bakdoolott.coreservice.services.HallService;
 import com.github.bakdoolott.coreservice.services.TableService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TableServiceImpl implements TableService {
+
     private final TableRepo repository;
     private final HallService hallService;
     private final TableMapper mapper;
@@ -31,30 +32,42 @@ public class TableServiceImpl implements TableService {
     @Override
     @Transactional
     public List<TableResponse> create(List<CreateTableRequest> requests) {
+        List<Tables> entities = new ArrayList<>(requests.size());
 
-        List<Tables> entities = requests.stream()
-                .map(request -> {
-                    if (!hallService.isExistById(request.hallId())) {
-                        throw new NotFoundException(
-                                "Hall with id: " + request.hallId() + " not found"
-                        );
+        for(CreateTableRequest request : requests){
+            if(!hallService.isExistById(request.hallId())){
+                throw new NotFoundException("Зал с ID " + request.hallId() + " не найден");
+            }
+            Optional<Tables> existing = repository.findByHallIdAndTableNumber(
+                    request.hallId(),request.tableNumber());
+
+                    Tables table;
+                    if (existing.isPresent()) {
+                        table = existing.get();
+                        table.setX(request.x());
+                        table.setY(request.y());
+                        table.setTableType(request.tableType());
+                        table.setTableState(request.tableState());
+                        boolean wasDisabled = !table.isEnable();
+                        table.setEnable(true);
+
+                        log.info("Стол (айди зала={}, номер стола={}) уже существует (id={}{}). Обновился",
+                                request.hallId(), request.tableNumber(), table.getId(),
+                                wasDisabled ? ", был отключен - сейчас включен" : "");
+                    } else {
+                        table = Tables.builder()
+                                .tableNumber(request.tableNumber())
+                                .x(request.x())
+                                .y(request.y())
+                                .tableType(request.tableType())
+                                .tableState(request.tableState())
+                                .hall(Hall.builder().id(request.hallId()).build())
+                                .enable(true)
+                                .build();
                     }
-
-                    return Tables.builder()
-                            .tableNumber(request.tableNumber())
-                            .x(request.x())
-                            .y(request.y())
-                            .tableType(request.tableType())
-                            .tableState(request.tableState())
-                            .hall(Hall.builder()
-                                    .id(request.hallId())
-                                    .build())
-                            .build();
-                })
-                .toList();
-
-        return repository.saveAll(entities)
-                .stream()
+                    entities.add(table);
+                }
+                return repository.saveAll(entities).stream()
                 .map(mapper::toResponse)
                 .toList();
     }
@@ -70,22 +83,15 @@ public class TableServiceImpl implements TableService {
                             id -> hallMapper.toEntity(hallService.findById(id)));
 
                     Tables table = repository.findByIdAndEnable(request.id(), true)
-                            .orElseThrow(() ->
-                                    new NotFoundException(
-                                            "Table with id: " + request.id() + " not found"
-                                    )
-                            );
+                            .orElseThrow(() -> new NotFoundException(
+                                    "Столик с ID " + request.id() + " не найден"));
 
                     table.setTableNumber(request.tableNumber());
                     table.setX(request.x());
                     table.setY(request.y());
                     table.setTableType(request.tableType());
                     table.setTableState(request.tableState());
-                    table.setHall(
-                            hallMapper.toEntity(
-                                    hallService.findById(request.hallId())
-                            )
-                    );
+                    table.setHall(hall);
 
                     return table;
                 })
@@ -104,9 +110,8 @@ public class TableServiceImpl implements TableService {
     @Override
     public TablesDto findById(Long id) {
         return mapper.toDto(
-                repository.findByIdAndEnable(id, true).orElseThrow(
-                        () -> new NotFoundException("Table with id: " + id + " not found")
-                )
+                repository.findByIdAndEnable(id, true)
+                        .orElseThrow(() -> new NotFoundException("Столик с ID " + id + " не найден"))
         );
     }
 
@@ -120,9 +125,8 @@ public class TableServiceImpl implements TableService {
     @Override
     @Transactional
     public void deleteById(Long id) {
-        Tables table = repository.findByIdAndEnable(id, true).orElseThrow(
-                () -> new NotFoundException("Table with id: " + id + " not found")
-        );
+        Tables table = repository.findByIdAndEnable(id, true)
+                .orElseThrow(() -> new NotFoundException("Столик с ID " + id + " не найден"));
 
         table.setEnable(false);
     }

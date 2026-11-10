@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 020-hall-unique-partial
+      author: Viktor
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: hall_tb
+            columnName: hall_number
+      changes:
+        - sql:
+            sql: >
+              ALTER TABLE hall_tb DROP CONSTRAINT IF EXISTS hall_tb_hall_number_key;
+        - sql:
+            sql: >
+              CREATE UNIQUE INDEX IF NOT EXISTS uk_hall_number_enabled
+              ON hall_tb (hall_number)
+              WHERE enable = true;
