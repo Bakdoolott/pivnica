@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -77,6 +78,13 @@ public class EventController {
     public ResponseEntity<EventResponse> unpublishEvent(@PathVariable Long id){
         EventResponse event = eventService.unpublishEvent(id);
         return ResponseEntity.ok(event);
+    }
+    @PostMapping("/admin/{id}/uploadImg")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OWNER')")
+    public ResponseEntity<Void> uploadImage( @PathVariable Long id,
+                                                      @Valid @RequestBody MultipartFile file){
+        eventService.uploadImage(id, file);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
