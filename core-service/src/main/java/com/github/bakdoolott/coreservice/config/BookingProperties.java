@@ -77,4 +77,9 @@ public class BookingProperties {
         }
         return arrivalDeadline.isAfter(openTime);
     }
+    @Min(1) @Max(10)
+    int maxPaymentQrSizeMb = 2;
+
+    @Min(1) @Max(120)
+    int paymentTimeoutMinutes = 30;
 }

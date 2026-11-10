@@ -43,6 +43,7 @@ public class Hall {
     String hallNumber;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     @Column(nullable = false)
     HallStatus hallStatus = HallStatus.ENABLE;
 

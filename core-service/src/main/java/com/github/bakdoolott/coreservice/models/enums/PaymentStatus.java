@@ -3,7 +3,8 @@ package com.github.bakdoolott.coreservice.models.enums;
 public enum PaymentStatus {
     PENDING,
     PAID,
-    FAILED,
+    NOT_REQUIRED,
+    REFUND_REQUESTED,
     REFUNDED,
-    NOT_REQUIRED
+    REJECTED
 }
