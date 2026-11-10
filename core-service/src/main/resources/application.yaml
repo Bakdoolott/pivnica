@@ -23,13 +23,6 @@ spring:
       max-file-size: 5MB
       max-request-size: 10MB
 
-  servlet:
-    multipart:
-      # Максимальный размер одного файла
-      max-file-size: 5MB
-      # Максимальный размер всего запроса (включая текстовые поля и несколько файлов)
-      max-request-size: 10MB
-
 management:
   endpoints:
     web:
