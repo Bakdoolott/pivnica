@@ -1,7 +1,9 @@
 server:
   port: 8082
   forward-headers-strategy: framework
-  upload-dir: uploads
+
+app:
+  upload-dir: ./uploads/events
 
 spring:
   application:

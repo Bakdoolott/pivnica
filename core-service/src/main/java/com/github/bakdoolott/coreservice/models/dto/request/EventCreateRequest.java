@@ -3,6 +3,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -12,10 +13,8 @@ public class EventCreateRequest {
     @NotBlank
     private String title;
     private String description;
-    @NotBlank
-    private String imageUrl;
-    @NotBlank
-    private String imageName;
+    @NotNull
+    private MultipartFile image;
     @NotNull
     private LocalDateTime startsAt;
     @NotNull

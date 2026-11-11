@@ -1,4 +1,5 @@
 package com.github.bakdoolott.coreservice.services;
+import com.github.bakdoolott.coreservice.models.dto.request.EventUpdateRequest;
 import com.github.bakdoolott.coreservice.models.dto.response.EventResponse;
 import com.github.bakdoolott.coreservice.models.dto.response.EventBannerDTO;
 import com.github.bakdoolott.coreservice.models.dto.request.EventCreateRequest;
@@ -12,7 +13,9 @@ public interface EventService {
     EventResponse createEvent(EventCreateRequest request, String createdBy);
     EventResponse publishEvent(Long id);
     EventResponse unpublishEvent(Long id);
-EventResponse updateEvent(Long id, EventCreateRequest request);
+EventResponse updateEvent(Long id, EventUpdateRequest request);
     void deleteEvent(Long id);
     void uploadImage(Long id, MultipartFile file);
+    EventResponse getEventById(Long id);
+    EventResponse getEventByIdForAdmin(Long id);
 }

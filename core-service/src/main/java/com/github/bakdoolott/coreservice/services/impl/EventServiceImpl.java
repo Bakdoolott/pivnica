@@ -1,5 +1,6 @@
 package com.github.bakdoolott.coreservice.services.impl;
 
+import com.github.bakdoolott.coreservice.models.dto.request.EventUpdateRequest;
 import com.github.bakdoolott.coreservice.models.dto.response.EventResponse;
 import com.github.bakdoolott.coreservice.models.dto.response.EventBannerDTO;
 import com.github.bakdoolott.coreservice.models.dto.request.EventCreateRequest;
@@ -8,17 +9,11 @@ import com.github.bakdoolott.coreservice.services.EventService;
 import com.github.bakdoolott.coreservice.repositories.EventRepository;
 import com.github.bakdoolott.coreservice.mappers.EventMapper;
 import com.github.bakdoolott.coreservice.exceptions.NotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.github.bakdoolott.coreservice.models.Event;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,10 +24,39 @@ import java.util.stream.Collectors;
 public class EventServiceImpl implements EventService{
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
-    private FileStorageService fileStorageService;
-    @Value("${server.upload-dir}")
-    private String uploadDir;;
+    private final FileStorageService fileStorageService;
 
+
+    @Override
+    @Transactional
+    public EventResponse createEvent(EventCreateRequest request, String createdBy) {
+        String fileName = fileStorageService.store(request.getImage());
+
+        Event event = eventMapper.toEntity(request, createdBy);
+        event.setImageName(fileName);
+        event.setImageUrl("/uploads/events/" + fileName);
+
+        Event saved = eventRepository.save(event);
+        return eventMapper.toResponse(saved);
+    }
+
+
+
+    @Override
+    @Transactional
+    public void uploadImage(Long id, MultipartFile file) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Not Found Event " + id));
+
+        String oldImageName = event.getImageName();
+        String newImageName = fileStorageService.store(file);
+
+        event.setImageName(newImageName);
+        event.setImageUrl("/uploads/events/" + newImageName);
+        eventRepository.save(event);
+
+        fileStorageService.delete(oldImageName);
+    }
 
     @Override
     public List<EventBannerDTO> getActiveBanners(){
@@ -52,13 +76,6 @@ public class EventServiceImpl implements EventService{
                 .collect(Collectors.toList());
     }
 
-    @Override
-    @Transactional
-    public EventResponse createEvent(EventCreateRequest request, String createdBy){
-        Event event = eventMapper.toEntity(request, createdBy);
-        Event saved = eventRepository.save(event);
-        return eventMapper.toResponse(saved);
-    }
 
     @Override
     @Transactional
@@ -88,45 +105,27 @@ public class EventServiceImpl implements EventService{
 
     @Override
     @Transactional
-    public EventResponse updateEvent(Long id, EventCreateRequest request){
+    public EventResponse updateEvent(Long id,EventUpdateRequest request){
         Event event = eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Not Found Event " + id));
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
         event.setEndsAt(request.getEndsAt());
         event.setStartsAt(request.getStartsAt());
-        event.setImageName(request.getImageName());
-        event.setImageUrl(request.getImageUrl());
         Event saved = eventRepository.save(event);
         return eventMapper.toResponse(saved);
     }
     @Override
-    @Transactional
-    public void uploadImage(Long id, MultipartFile file) {
-        // 1. Находим событие по id или выбрасываем ваш кастомный NotFoundException
+    public EventResponse getEventById(Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Событие с id " + id + " не найдено"));
+                .filter(e -> e.isEnable() && e.getEventStatus() == EventStatus.ENABLE)
+                .orElseThrow(() -> new NotFoundException("Not Found Event " + id));
+        return eventMapper.toResponse(event);
+    }
 
-        // 2. Если у события уже была картинка, удаляем старый файл с диска
-        String oldImageName = event.getImageName();
-        if (oldImageName != null && !oldImageName.isEmpty()) {
-            try {
-                Path oldFilePath = Paths.get(uploadDir).resolve(oldImageName).toAbsolutePath().normalize();
-                Files.deleteIfExists(oldFilePath);
-            } catch (IOException e) {
-                // Логируем ошибку, но не прерываем транзакцию, чтобы загрузка нового файла всё равно сработала
-                // Если у вас нет логгера, можно временно оставить System.err или выкинуть RuntimeException
-                System.err.println("Не удалось удалить старый файл: " + oldImageName);
-            }
-        }
-
-        // 3. Вызываем метод store из FileStorageService для сохранения нового файла
-        String newImageName = fileStorageService.store(file);
-
-        // 4. Записываем результаты в сущность
-        event.setImageName(newImageName);
-        event.setImageUrl("/uploads/" + newImageName);
-
-        // 5. Сохраняем обновленное событие
-        eventRepository.save(event);
+    @Override
+    public EventResponse getEventByIdForAdmin(Long id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Not Found Event " + id));
+        return eventMapper.toResponse(event);
     }
 }

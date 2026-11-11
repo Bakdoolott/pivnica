@@ -1,5 +1,6 @@
 package com.github.bakdoolott.coreservice.controller;
 
+import com.github.bakdoolott.coreservice.models.dto.request.EventUpdateRequest;
 import com.github.bakdoolott.coreservice.models.dto.response.EventResponse;
 import com.github.bakdoolott.coreservice.models.dto.response.EventBannerDTO;
 import com.github.bakdoolott.coreservice.models.dto.request.EventCreateRequest;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,10 +44,10 @@ public class EventController {
         List<EventResponse> events = eventService.getAllForAdmin();
         return events;
     }
-    @PostMapping("/admin")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
+    @PostMapping(value = "/admin", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     @Operation(summary = "создание мероприятия")
-    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreateRequest request){
+    public ResponseEntity<EventResponse> createEvent(@Valid @ModelAttribute EventCreateRequest request) {
         String createdBy = SecurityContextHolder.getContext().getAuthentication().getName();
         EventResponse saved = eventService.createEvent(request, createdBy);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -54,7 +56,7 @@ public class EventController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_OWNER')")
     @Operation(summary = "редактирование мероприятия",
     description = "обновляет отдельные поля")
-    public ResponseEntity<EventResponse> updateEvent(@PathVariable Long id, @Valid @RequestBody EventCreateRequest request){
+    public ResponseEntity<EventResponse> updateEvent(@PathVariable Long id, @Valid @RequestBody EventUpdateRequest request){
         EventResponse saved = eventService.updateEvent(id, request);
         return ResponseEntity.ok().body(saved);
     }
@@ -79,13 +81,26 @@ public class EventController {
         EventResponse event = eventService.unpublishEvent(id);
         return ResponseEntity.ok(event);
     }
-    @PostMapping("/admin/{id}/uploadImg")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OWNER')")
-    public ResponseEntity<Void> uploadImage( @PathVariable Long id,
-                                                      @Valid @RequestBody MultipartFile file){
+    @PostMapping(value = "/admin/{id}/uploadImg", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<Void> uploadImage(@PathVariable Long id,
+                                            @RequestParam("file") MultipartFile file) {
         eventService.uploadImage(id, file);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+    @GetMapping("/{id}")
+    @Operation(summary = "получить мероприятие по id")
+    public ResponseEntity<EventResponse> getEvent(@PathVariable Long id) {
+        return ResponseEntity.ok(eventService.getEventById(id));
+    }
+
+    @GetMapping("/admin/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @Operation(summary = "получить мероприятие по id (админ)")
+    public ResponseEntity<EventResponse> getEventForAdmin(@PathVariable Long id) {
+        return ResponseEntity.ok(eventService.getEventByIdForAdmin(id));
+    }
+
 
 
 }

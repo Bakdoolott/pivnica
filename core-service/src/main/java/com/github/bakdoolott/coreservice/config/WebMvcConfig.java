@@ -14,10 +14,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${storage.payment-qr-dir:./uploads/payment-qr}")
     private String qrDir;
 
+    @Value("${app.upload-dir}")
+    private String uploadDir;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String absolute = Paths.get(qrDir).toAbsolutePath().toUri().toString();
         registry.addResourceHandler("/uploads/payment-qr/**")
                 .addResourceLocations(absolute);
-    }
+
+    String eventsAbsolute = Paths.get(uploadDir).toAbsolutePath().normalize().toUri().toString();
+        registry.addResourceHandler("/uploads/events/**")
+                .addResourceLocations(eventsAbsolute);
+}
 }

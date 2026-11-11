@@ -16,7 +16,6 @@ public class EventMapper {
                 .id(event.getId())
                 .title(event.getTitle())
                 .description(event.getDescription())
-                .imageUrl(event.getImageUrl())
                 .startsAt((event.getStartsAt()))
                 .endsAt(event.getEndsAt())
                 .build();
@@ -40,8 +39,6 @@ public class EventMapper {
         Event event =  new Event();
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
-        event.setImageUrl(request.getImageUrl());
-        event.setImageName(request.getImageName());
         event.setStartsAt(request.getStartsAt());
         event.setEndsAt(request.getEndsAt());
         event.setEventStatus(EventStatus.UNAVAILABLE);
