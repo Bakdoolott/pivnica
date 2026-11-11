@@ -101,7 +101,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 || path.startsWith("/swagger-ui/")
                 || path.startsWith("/webjars/swagger-ui/")
                 || path.startsWith("/v3/api-docs/")
-                || path.matches("/docs/.*/v3/api-docs.*");
+                || path.matches("/docs/.*/v3/api-docs.*")
+                || path.startsWith("/uploads/");       // ← ДОБАВИТЬ ЭТУ СТРОКУ
     }
 
     @Override
