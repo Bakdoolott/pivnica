@@ -33,24 +33,24 @@ public class PaymentQrAdminController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Загрузить новый QR (старый деактивируется)")
     public ResponseEntity<PaymentQrResponse> upload(
             @AuthenticationPrincipal Long adminId,
             @RequestPart("file") MultipartFile file,
-            @RequestParam(required = false) String description) {
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String messengerChatUrl) {
 
-        PaymentQrResponse response = service.upload(adminId, file, description);
+        PaymentQrResponse response = service.upload(adminId, file, description, messengerChatUrl);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/external")
-    @Operation(summary = "Добавить QR по внешнему URL")
     public ResponseEntity<PaymentQrResponse> external(
             @AuthenticationPrincipal Long adminId,
             @RequestParam String imageUrl,
-            @RequestParam(required = false) String description) {
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String messengerChatUrl) {
 
-        PaymentQrResponse response = service.createFromUrl(adminId, imageUrl, description);
+        PaymentQrResponse response = service.createFromUrl(adminId, imageUrl, description, messengerChatUrl);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

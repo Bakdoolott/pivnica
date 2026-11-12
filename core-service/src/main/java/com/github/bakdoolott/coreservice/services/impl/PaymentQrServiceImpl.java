@@ -58,10 +58,6 @@ public class PaymentQrServiceImpl implements PaymentQrService {
         return repo.findAllOrdered().stream().map(mapper::toResponse).toList();
     }
 
-    /**
-     * Главный метод для гостя.
-     * Возвращает QR + сумму конкретной брони.
-     */
     @Override
     @Transactional(readOnly = true)
     public PaymentQrForBookingResponse getForBooking(Long userId, Long bookingId) {
@@ -80,16 +76,16 @@ public class PaymentQrServiceImpl implements PaymentQrService {
                 booking.getId(),
                 qr.getImageUrl(),
                 qr.getDescription(),
-                booking.getTotalAmount()
+                booking.getTotalAmount(),
+                qr.getMessengerChatUrl()    // ← передаём ссылку
         );
     }
 
     @Override
     @Transactional
-    public PaymentQrResponse upload(Long adminId, MultipartFile file, String description) {
+    public PaymentQrResponse upload(Long adminId, MultipartFile file, String description, String messengerChatUrl) {
         validateFile(file);
         LocalDateTime now = LocalDateTime.now(bookingProperties.getClubZone());
-
         repo.deactivateAll(now, adminId);
 
         String url = storage.save(file);
@@ -97,18 +93,17 @@ public class PaymentQrServiceImpl implements PaymentQrService {
         PaymentQr qr = new PaymentQr();
         qr.setImageUrl(url);
         qr.setDescription(description != null ? description.trim() : null);
+        qr.setMessengerChatUrl(messengerChatUrl != null ? messengerChatUrl.trim() : null); // ←
         qr.setEnable(true);
         qr.setCreatedAt(now);
         qr.setCreatedBy(adminId);
 
-        PaymentQr saved = repo.save(qr);
-        log.info("Payment QR uploaded: id={}, adminId={}, url={}", saved.getId(), adminId, url);
-        return mapper.toResponse(saved);
+        return mapper.toResponse(repo.save(qr));
     }
 
     @Override
     @Transactional
-    public PaymentQrResponse createFromUrl(Long adminId, String imageUrl, String description) {
+    public PaymentQrResponse createFromUrl(Long adminId, String imageUrl, String description, String messengerChatUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             throw new LogicException("URL обязателен");
         }
@@ -118,6 +113,7 @@ public class PaymentQrServiceImpl implements PaymentQrService {
         PaymentQr qr = new PaymentQr();
         qr.setImageUrl(imageUrl.trim());
         qr.setDescription(description != null ? description.trim() : null);
+        qr.setMessengerChatUrl(messengerChatUrl != null ? messengerChatUrl.trim() : null); // ←
         qr.setEnable(true);
         qr.setCreatedAt(now);
         qr.setCreatedBy(adminId);
@@ -134,6 +130,10 @@ public class PaymentQrServiceImpl implements PaymentQrService {
         if (dto.getDescription() != null) {
             String trimmed = dto.getDescription().trim();
             qr.setDescription(trimmed.isEmpty() ? null : trimmed);
+        }
+        if (dto.getMessengerChatUrl() != null) {   // ← добавить
+            String trimmed = dto.getMessengerChatUrl().trim();
+            qr.setMessengerChatUrl(trimmed.isEmpty() ? null : trimmed);
         }
         qr.setUpdatedAt(LocalDateTime.now(bookingProperties.getClubZone()));
         qr.setUpdatedBy(adminId);

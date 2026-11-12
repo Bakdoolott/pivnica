@@ -15,4 +15,7 @@ public class UpdatePaymentQrDto {
 
     @Size(max = 255)
     String description;
+
+    @Size(max = 500)
+    String messengerChatUrl;
 }
