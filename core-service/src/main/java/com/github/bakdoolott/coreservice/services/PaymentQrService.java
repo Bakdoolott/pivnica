@@ -14,11 +14,10 @@ public interface PaymentQrService {
     Optional<PaymentQrResponse> getActive();
     List<PaymentQrResponse> getAll();
 
-    /** Для гостя: QR + сумма из его брони. */
     PaymentQrForBookingResponse getForBooking(Long userId, Long bookingId);
 
-    PaymentQrResponse upload(Long adminId, MultipartFile file, String description);
-    PaymentQrResponse createFromUrl(Long adminId, String imageUrl, String description);
+    PaymentQrResponse upload(Long adminId, MultipartFile file, String description, String messengerChatUrl);
+    PaymentQrResponse createFromUrl(Long adminId, String imageUrl, String description, String messengerChatUrl);;
 
     PaymentQrResponse update(Long adminId, Long id, UpdatePaymentQrDto dto);
     void disable(Long adminId, Long id);

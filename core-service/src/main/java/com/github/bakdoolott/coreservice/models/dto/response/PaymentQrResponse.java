@@ -7,6 +7,7 @@ public record PaymentQrResponse(
         Long id,
         String imageUrl,
         String description,
+        String messengerChatUrl,
         boolean enable,
         LocalDateTime createdAt,
         Long createdBy,

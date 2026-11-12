@@ -6,5 +6,6 @@ public record PaymentQrForBookingResponse(
         Long bookingId,
         String imageUrl,
         String description,
-        BigDecimal amountToPay
-) {}
+        BigDecimal amountToPay,
+        String messengerChatUrl
+        ) {}
