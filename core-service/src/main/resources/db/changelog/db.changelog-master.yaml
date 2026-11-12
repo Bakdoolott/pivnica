@@ -41,4 +41,6 @@ databaseChangeLog:
       file: db/changelog/changes/019-add-booking-confirmation-fields.yaml
   - include:
       file: db/changelog/changes/020-hall-unique-partial.yaml
+  - include:
+      file: db/changelog/changes/021-add-messenger-chat-url.yaml
 
