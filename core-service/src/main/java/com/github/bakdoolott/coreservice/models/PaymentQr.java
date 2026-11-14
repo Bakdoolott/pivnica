@@ -45,6 +45,9 @@ public class PaymentQr {
     @Column(name = "updated_by")
     Long updatedBy;
 
+    @Column(name = "messenger_chat_url", length = 500)
+    String messengerChatUrl;
+
     @Version
     Long version;
 }
