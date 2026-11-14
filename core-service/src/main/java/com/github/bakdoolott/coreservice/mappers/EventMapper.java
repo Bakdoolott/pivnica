@@ -17,6 +17,7 @@ public class EventMapper {
                 .title(event.getTitle())
                 .description(event.getDescription())
                 .startsAt((event.getStartsAt()))
+                .imageUrl(event.getImageUrl())
                 .endsAt(event.getEndsAt())
                 .build();
     }

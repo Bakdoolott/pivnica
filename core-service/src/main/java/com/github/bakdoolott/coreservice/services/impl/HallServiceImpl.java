@@ -81,6 +81,7 @@ public class HallServiceImpl implements HallService {
 
     @Override
     public HallResponse getById(Long id) {
+
         return mapper.toResponse(findById(id));
     }
 
@@ -94,6 +95,7 @@ public class HallServiceImpl implements HallService {
 
     @Override
     public List<HallResponse> getAll() {
+
         return mapper.toResponseList(repository.findAllEnabled());
     }
 
@@ -107,6 +109,7 @@ public class HallServiceImpl implements HallService {
 
     @Override
     public Boolean isExistById(Long id) {
+
         return repository.existsByIdAndEnableTrue(id);
     }
     
