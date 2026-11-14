@@ -44,6 +44,7 @@ public class BookingPriceController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Действующие цены по всем типам столов")
     public ResponseEntity<List<PriceResponse>> current(){
+
         return ResponseEntity.ok(service.getCurrentPrices());
     }
 

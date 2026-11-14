@@ -344,7 +344,6 @@ public class BookingServiceImpl implements BookingService {
         return bookingMapper.toResponse(bookingRepo.save(booking));
     }
 
-    // ===================== CANCEL (гость) =====================
 
     @Transactional
     @Override
@@ -675,11 +674,10 @@ public class BookingServiceImpl implements BookingService {
         }
         String digitsOnly = phone.replaceAll("[^0-9]", "");
 
-        // 9 цифр — киргизский без кода
         if (digitsOnly.length() == 9) {
             digitsOnly = "996" + digitsOnly;
         }
-        // 10 цифр, начинается с 0 — тоже киргизский
+
         else if (digitsOnly.length() == 10 && digitsOnly.startsWith("0")) {
             digitsOnly = "996" + digitsOnly.substring(1);
         }
@@ -699,7 +697,7 @@ public class BookingServiceImpl implements BookingService {
             return "";
         }
         String cleaned = value.replace("\"", "\"\"").replaceAll("[\\r\\n]+", " ");
-        if (cleaned.matches("^[=+\\-@\t].*")) {   // \t (табуляция), не t
+        if (cleaned.matches("^[=+\\-@\t].*")) {
             cleaned = "'" + cleaned;
         }
         return "\"" + cleaned + "\"";

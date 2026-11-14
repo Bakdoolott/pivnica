@@ -70,14 +70,14 @@ public class PaymentQrServiceImpl implements PaymentQrService {
         }
 
         PaymentQr qr = repo.findActive()
-                .orElseThrow(() -> new LogicException("QR для оплаты не настроен, обратитесь в клуб"));
+                .orElseThrow(() -> new LogicException("QR для оплаты не настроен, обратитесь к администрации"));
 
         return new PaymentQrForBookingResponse(
                 booking.getId(),
                 qr.getImageUrl(),
                 qr.getDescription(),
                 booking.getTotalAmount(),
-                qr.getMessengerChatUrl()    // ← передаём ссылку
+                qr.getMessengerChatUrl()
         );
     }
 
